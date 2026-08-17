@@ -92,6 +92,31 @@ async function requestAiAnalysis(files,context){
   if(!response.ok)throw new Error('AI server unavailable');
   return (await response.json()).analysis;
 }
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let bakingAudio=null;
+function prepareBakingAudio(){
+  try{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return;bakingAudio=bakingAudio||new AudioContext();if(bakingAudio.state==='suspended')bakingAudio.resume()}catch{}
+}
+function playBakingChime(kind='oven'){
+  if(!bakingAudio||bakingAudio.state!=='running')return;
+  const now=bakingAudio.currentTime,notes=kind==='jar'?[[1174,0,.08],[1568,.08,.13]]:[[784,0,.13],[1047,.12,.34]];
+  notes.forEach(([frequency,offset,duration])=>{const oscillator=bakingAudio.createOscillator(),gain=bakingAudio.createGain();oscillator.type=kind==='jar'?'sine':'triangle';oscillator.frequency.setValueAtTime(frequency,now+offset);gain.gain.setValueAtTime(.0001,now+offset);gain.gain.exponentialRampToValueAtTime(kind==='jar'?.08:.13,now+offset+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+offset+duration);oscillator.connect(gain).connect(bakingAudio.destination);oscillator.start(now+offset);oscillator.stop(now+offset+duration+.03)});
+}
+function startBaking(){
+  const stage=document.getElementById('bakingStage'),cookie=document.getElementById('bakingCookie'),copy=document.getElementById('loadingText');
+  const messages=['사진에서 여행의 재료를 찾는 중...','그날의 빛을 반죽에 섞는 중...','여행의 온도로 굽는 중...'];
+  let index=0;stage.dataset.phase='dough';cookie.src='assets/cookie-ring.png';copy.textContent=messages[0];
+  const phaseOne=setTimeout(()=>{stage.dataset.phase='mix';copy.textContent=messages[1]},1300);
+  const phaseTwo=setTimeout(()=>{stage.dataset.phase='bake';copy.textContent=messages[2]},2800);
+  const messageLoop=setInterval(()=>{if(stage.dataset.phase==='bake'){index=(index+1)%3;copy.textContent=messages[index]}},1900);
+  return()=>{clearTimeout(phaseOne);clearTimeout(phaseTwo);clearInterval(messageLoop)};
+}
+async function finishBaking(flavor,next){
+  const stage=document.getElementById('bakingStage'),cookie=document.getElementById('bakingCookie'),copy=document.getElementById('loadingText'),title=document.getElementById('loadingTitle');
+  cookie.src=flavor.file;stage.dataset.phase='top';copy.textContent='마지막 토핑을 올리는 중...';playBakingChime('oven');await pause(850);
+  title.textContent='띵— 오늘의 맛이 구워졌어요.';copy.textContent='완성된 쿠키를 Jar에 담는 중...';stage.dataset.phase='drop';await pause(850);
+  stage.dataset.phase='done';copy.textContent='오늘의 맛을 담아두었어요.';playBakingChime('jar');await pause(850);next();
+}
 function renderResult(flavor){
   currentFlavor=flavor; const n=flavors.indexOf(flavor)+1;
   document.getElementById('resultName').textContent=flavor.name;
@@ -133,7 +158,7 @@ function renderTripLetter(flavor){
   document.getElementById('closingNote').textContent=`당신이 ${destination}에서 보낸 시간은 충분히 즐거웠고, 그 행복이 사진에 다정하게 남아 있어요.`;
   if(aiInsight){
     document.getElementById('resultReason').textContent=aiInsight.why_this_flavor;
-    document.getElementById('photoStory').textContent=`${aiInsight.scene_observation} ${aiInsight.warm_observation}`;
+    document.getElementById('photoStory').textContent=[aiInsight.specific_place_observation,aiInsight.capture_time_note,aiInsight.scene_observation,aiInsight.warm_observation].filter(Boolean).join(' ');
     document.getElementById('travelStyle').textContent=aiInsight.travel_style;
     document.getElementById('seasonStory').textContent=aiInsight.season_note;
     document.getElementById('foodStory').textContent=aiInsight.local_food_question;
@@ -144,23 +169,22 @@ function renderTripLetter(flavor){
   document.getElementById('colorLegend').innerHTML=palette.map(c=>`<div><b style="background:${c[1]}"></b><span>${c[0]}</span><em>${c[2]}%</em></div>`).join('');
 }
 async function beginFinding(file,fromFriend=false){
-  showScreen('loading'); const messages=['사진 속 색감을 천천히 섞는 중','여행의 온도를 굽는 중','마지막 향을 더하는 중']; let i=0;
-  const timer=setInterval(()=>document.getElementById('loadingText').textContent=messages[++i%messages.length],900);
+  showScreen('loading');document.getElementById('loadingTitle').innerHTML='여행을 쿠키로 굽는 중<span class="loading-dots"></span>';const stopBaking=startBaking(),minimum=pause(4300);
   if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch{aiInsight=null}}
   const hash=await fingerprint(file); let flavor=flavors[hash%flavors.length];
   if(!fromFriend&&aiInsight)flavor=flavors.find(f=>f.name===aiInsight.flavor)||flavor;
   if(fromFriend&&friendBase&&flavor.id===friendBase.id&&hash%3!==0) flavor=flavors[(flavors.indexOf(flavor)+1)%flavors.length];
-  setTimeout(()=>{clearInterval(timer);if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result')}},3000);
+  await minimum;stopBaking();await finishBaking(flavor,()=>{if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result')}});
 }
-document.getElementById('findButton').addEventListener('click',()=>beginFinding(photos[0]));
+document.getElementById('findButton').addEventListener('click',()=>{prepareBakingAudio();beginFinding(photos[0])});
 async function beginFriendFinding(){
-  showScreen('loading');const selected=friendPhotos.filter(Boolean),timer=setInterval(()=>document.getElementById('loadingText').textContent='친구의 여행을 다정하게 읽는 중',900);
+  showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
   try{friendAi=await requestAiAnalysis(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch{friendAi=null}
   const hash=await fingerprint(selected[0]);let flavor=friendAi?flavors.find(f=>f.name===friendAi.flavor):flavors[hash%flavors.length];if(!flavor)flavor=flavors[hash%flavors.length];
-  setTimeout(()=>{clearInterval(timer);renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)},900);
+  await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)});
 }
-document.getElementById('friendFindButton').addEventListener('click',beginFriendFinding);
+document.getElementById('friendFindButton').addEventListener('click',()=>{prepareBakingAudio();beginFriendFinding()});
 
 function shareUrl(){const url=new URL(location.href);url.search='';url.hash=`friend=${currentFlavor.id}`;return url.toString()}
 document.getElementById('shareButton').addEventListener('click',async()=>{
@@ -177,7 +201,7 @@ function renderFriendAnalysis(flavor){
   document.getElementById('friendExperience').textContent=place?.experience||'사진 속 장면을 자신의 속도로 천천히 즐긴 여행';
   document.getElementById('friendFood').textContent=place?.foodQuestion||`${destination}에서 가장 기억에 남은 음식은 무엇이었나요?`;
   document.getElementById('friendLetterTitle').textContent=`${destination}에서 가져온 다정한 한 조각`;
-  document.getElementById('friendPhotoStory').textContent=friendAi?`${friendAi.scene_observation} ${friendAi.warm_observation}`:`${place?.scene||destination}의 분위기 속에서 편안하게 여행을 즐긴 모습이 느껴져요. 사진 밖에서도 좋은 이야기가 이어졌을 것 같아요.`;
+  document.getElementById('friendPhotoStory').textContent=friendAi?[friendAi.specific_place_observation,friendAi.capture_time_note,friendAi.scene_observation,friendAi.warm_observation].filter(Boolean).join(' '):`${place?.scene||destination}의 분위기 속에서 편안하게 여행을 즐긴 모습이 느껴져요. 사진 밖에서도 좋은 이야기가 이어졌을 것 같아요.`;
   document.getElementById('friendTravelStyle').textContent=friendAi?.travel_style||`${place?.experience||'마음에 머무는 장면을 천천히 발견하는 여행'}이었을 것 같아요. 그래서 ${flavor.name}의 맛을 담았어요.`;
   document.getElementById('friendSeasonStory').textContent=friendAi?.season_note||`${month}월의 ${destination}은 ${season}에 가까워요. ${seasonNote}라서 그때만의 빛과 온도를 더 풍성하게 만났을 거예요.`;
   document.getElementById('friendFoodStory').textContent=friendAi?.local_food_question||place?.foodQuestion||`${destination}에서 가장 맛있었던 한 입은 무엇이었나요?`;
@@ -196,4 +220,15 @@ function renderCompare(a,b){
   showScreen('compare');
 }
 function toast(message){const t=document.getElementById('toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+document.querySelectorAll('[data-waitlist-form]').forEach(form=>form.addEventListener('submit',async event=>{
+  event.preventDefault();const button=form.querySelector('button'),status=form.querySelector('.waitlist-status'),data=new FormData(form);
+  if(data.get('company'))return;
+  button.disabled=true;button.textContent='반죽을 준비하는 중...';status.textContent='';
+  const source=location.hash.includes('friend=')?'friend_share':'find_your_flavor';
+  try{
+    const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:data.get('name'),email:data.get('email'),source,flavor:currentFlavor?.name||friendBase?.name||null,page_url:location.href})});
+    const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'등록하지 못했어요.');
+    form.classList.add('is-complete');status.innerHTML='<strong>반죽해두었어요. 🍪</strong><br>Cookie:Ro Bakery가 문을 여는 날 가장 먼저 알려드릴게요.';
+  }catch(error){status.textContent=error.message||'잠시 후 다시 시도해 주세요.';button.disabled=false;button.textContent='🍪 첫 쿠키 예약해두기'}
+}));
 window.addEventListener('hashchange',initFriend);initFriend();

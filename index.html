@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=7">
-  <link rel="stylesheet" href="enhancements.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="enhancements.css?v=9">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -65,19 +65,22 @@
           <img alt="두 번째 여행 사진 미리보기">
         </label>
       </div>
-      <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 분석을 위해서만 안전한 서버로 전송돼요.</p>
+      <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 사진·촬영 시각·GPS가 있는 경우 위치를 분석에만 사용하며 저장하지 않아요.</p>
       <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
     </section>
 
     <section class="screen loading-screen" id="loading" data-step="2" aria-live="polite">
-      <div class="mixing-bowl">
-        <img src="assets/cookie-ring.png" alt="Cookie:Ro 쿠키링">
-        <span class="scan-line"></span>
+      <div class="baking-stage" id="bakingStage" data-phase="dough">
+        <span class="oven-label" aria-hidden="true">OVEN 01 · YOUR JOURNEY IS BAKING</span>
+        <div class="oven-glow" aria-hidden="true"></div>
+        <img class="baking-cookie" id="bakingCookie" src="assets/cookie-ring.png" alt="천천히 구워지고 있는 Cookie:Ro 쿠키">
+        <span class="baking-spark spark-one" aria-hidden="true">✦</span><span class="baking-spark spark-two" aria-hidden="true">✦</span>
+        <div class="loading-jar" aria-hidden="true"><img src="assets/cookie-jar.png" alt=""></div>
+        <span class="bake-sound" aria-hidden="true"></span>
       </div>
       <span class="eyebrow">BAKING YOUR MOMENT</span>
-      <h2>Finding your flavor<span class="loading-dots"></span></h2>
-      <p id="loadingText">사진 속 색감을 천천히 섞는 중</p>
-      <div class="loading-bar"><i></i></div>
+      <h2 id="loadingTitle">여행을 쿠키로 굽는 중<span class="loading-dots"></span></h2>
+      <p id="loadingText">사진에서 여행의 재료를 찾는 중...</p>
     </section>
 
     <section class="screen result-screen" id="result" data-step="3">
@@ -139,6 +142,19 @@
         <button class="primary-button" id="shareButton">친구에게 Flavor 보내기 <span>↗</span></button>
         <p class="share-status" id="shareStatus" aria-live="polite"></p>
       </div>
+      <section class="waitlist-card">
+        <span class="eyebrow">COOKIE:RO BAKERY · COMING SOON</span>
+        <h3>아직 오븐은<br>예열 중이에요.</h3>
+        <p>Cookie:Ro Bakery가 문을 열면<br>당신의 여행으로 만든 첫 쿠키를 가장 먼저 알려드릴게요.</p>
+        <form class="waitlist-form" data-waitlist-form>
+          <label><span>이름</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 닉네임" required></label>
+          <label><span>이메일</span><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="hello@example.com" required></label>
+          <input class="honey-field" name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="consent-row"><input name="consent" type="checkbox" required><span>출시 소식 수신과 대기명단 등록에 동의해요.</span></label>
+          <button class="primary-button" type="submit">🍪 첫 쿠키 예약해두기</button>
+          <p class="waitlist-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
     </section>
 
     <section class="screen" id="friend" data-step="1">
@@ -203,6 +219,19 @@
         <div class="friend-jar"><img id="friendFilledJar" alt="친구의 Flavor Cookie가 담긴 Cookie:Ro jar"></div>
       </section>
       <button class="primary-button" data-go="home">나도 친구에게 보내기 <span>→</span></button>
+      <section class="waitlist-card compact-waitlist">
+        <span class="eyebrow">COOKIE:RO BAKERY · COMING SOON</span>
+        <h3>아직 오븐은 예열 중이에요.</h3>
+        <p>문을 여는 날, 가장 먼저 소식을 전해드릴게요.</p>
+        <form class="waitlist-form" data-waitlist-form>
+          <label><span>이름</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 닉네임" required></label>
+          <label><span>이메일</span><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="hello@example.com" required></label>
+          <input class="honey-field" name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="consent-row"><input name="consent" type="checkbox" required><span>출시 소식 수신과 대기명단 등록에 동의해요.</span></label>
+          <button class="primary-button" type="submit">🍪 첫 쿠키 예약해두기</button>
+          <p class="waitlist-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
     </section>
 
     <section class="screen flavors-screen" id="flavors" data-step="0">
@@ -218,6 +247,6 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
   <script src="destinations.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
