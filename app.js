@@ -67,7 +67,7 @@ function previewFile(input,index,isFriend=false){
 }
 function setPhotoPreview(label,file){const img=label.querySelector('img');if(img.dataset.objectUrl)URL.revokeObjectURL(img.dataset.objectUrl);const url=URL.createObjectURL(file);img.src=url;img.dataset.objectUrl=url;label.classList.add('has-image')}
 function previewBatch(input,isFriend=false){
-  const files=[...(input.files||[])].filter(file=>file.type.startsWith('image/')).slice(0,5);if(!files.length)return;
+  const files=[...(input.files||[])].filter(file=>file.type.startsWith('image/')).slice(0,3);if(!files.length)return;
   const selector=isFriend?'input[data-friend-slot]':'input[data-slot]',inputs=[...document.querySelectorAll(selector)],target=isFriend?friendPhotos:photos;target.length=0;
   inputs.forEach(item=>{const label=item.closest('.photo-slot'),img=label.querySelector('img');if(img.dataset.objectUrl)URL.revokeObjectURL(img.dataset.objectUrl);img.removeAttribute('src');delete img.dataset.objectUrl;label.classList.remove('has-image')});
   files.forEach((file,index)=>{target[index]=file;setPhotoPreview(inputs[index].closest('.photo-slot'),file)});

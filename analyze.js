@@ -90,7 +90,7 @@ function keepTheMagic(value){
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   const {destination,date,images,palette,exif}=req.body||{};
-  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>5)return res.status(400).json({error:'Invalid request'});
+  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
   if(images.some(x=>typeof x!=='string'||x.length>1_500_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
   const flavorAnchor=stableFlavor(palette);
   const recipe=flavorRecipes[flavorAnchor];

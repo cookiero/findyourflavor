@@ -12,7 +12,7 @@
 @media(max-width:520px){.trip-fields{grid-template-columns:1fr}.travel-letter{padding:27px 24px}.color-legend{grid-template-columns:1fr}.destination-facts{grid-template-columns:1fr}.destination-facts section+section{border-left:0;border-top:1px solid rgba(255,248,236,.18);padding-left:0}.destination-card{padding:27px 24px}.friend-jar{height:340px;margin-left:-20px;margin-right:-20px}.friend-result-detail>h3{font-size:38px}.hero-copy h1{font-size:38px}.hero-object .stamp{right:2px}}
 
 /* Five crumbs: one hero memory followed by four compact snapshots. */
-.upload-grid{grid-template-columns:repeat(4,1fr);gap:10px}.upload-grid .photo-slot{height:154px;border-radius:22px}.upload-grid .photo-slot:first-child{grid-column:1/-1;height:286px}.upload-grid .photo-slot.optional{margin-top:0}.friend-upload-grid .friend-slot{height:154px}.friend-upload-grid .friend-slot:first-child{height:260px}
+.upload-grid{grid-template-columns:repeat(2,1fr);gap:10px}.upload-grid .photo-slot{height:180px;border-radius:22px}.upload-grid .photo-slot:first-child{grid-column:1/-1;height:286px}.upload-grid .photo-slot.optional{margin-top:0}.friend-upload-grid .friend-slot{height:180px}.friend-upload-grid .friend-slot:first-child{height:260px}
 .reason-card p{white-space:pre-line}
 .color-legend span small{display:block;margin-top:2px;font:8px/1 var(--sans);letter-spacing:.08em;color:#a18f83}
 #result .destination-card,#result .travel-letter,#result .trait-row{display:none!important}

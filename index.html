@@ -31,7 +31,7 @@
       <div class="hero-copy stagger">
         <span class="eyebrow">A TASTE OF YOUR JOURNEY</span>
         <h1>여행에는 저마다의<br><em>맛</em>이 있으니까.</h1>
-        <p>사진 1–5장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
+        <p>사진 1–3장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
       </div>
       <button class="hero-object" data-go="upload" aria-label="쿠키를 눌러 Find my flavor 시작하기">
         <svg class="orbit-copy" viewBox="0 0 400 400" aria-hidden="true">
@@ -63,7 +63,7 @@
       <div class="upload-grid" id="uploadGrid">
         <label class="photo-slot">
           <input type="file" accept="image/*" data-slot="0" multiple>
-          <span class="plus">＋</span><strong>사진 1~5장 고르기</strong><small>한 번에 선택할 수 있어요</small>
+          <span class="plus">＋</span><strong>사진 1~3장 고르기</strong><small>한 번에 선택할 수 있어요</small>
           <img alt="첫 번째 여행 사진 미리보기">
         </label>
         <label class="photo-slot optional">
@@ -72,8 +72,6 @@
           <img alt="두 번째 여행 사진 미리보기">
         </label>
         <label class="photo-slot optional"><input type="file" accept="image/*" data-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>Optional</small><img alt="세 번째 여행 사진 미리보기"></label>
-        <label class="photo-slot optional"><input type="file" accept="image/*" data-slot="3"><span class="plus">＋</span><strong>네 번째 장면</strong><small>Optional</small><img alt="네 번째 여행 사진 미리보기"></label>
-        <label class="photo-slot optional"><input type="file" accept="image/*" data-slot="4"><span class="plus">＋</span><strong>마지막 한 장</strong><small>Optional</small><img alt="다섯 번째 여행 사진 미리보기"></label>
       </div>
       <p class="privacy-note">사진은 당신의 Flavor를 굽는 동안에만 사용하며 따로 저장하지 않아요.</p>
       <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
@@ -180,11 +178,9 @@
         <label><span>언제 다녀왔나요?</span><input id="friendDateInput" type="month"></label>
       </div>
       <div class="upload-grid friend-upload-grid">
-        <label class="photo-slot friend-slot"><input type="file" accept="image/*" data-friend-slot="0" multiple><span class="plus">＋</span><strong>사진 1~5장 고르기</strong><small>한 번에 선택할 수 있어요</small><img alt="첫 번째 여행 사진 미리보기"></label>
+        <label class="photo-slot friend-slot"><input type="file" accept="image/*" data-friend-slot="0" multiple><span class="plus">＋</span><strong>사진 1~3장 고르기</strong><small>한 번에 선택할 수 있어요</small><img alt="첫 번째 여행 사진 미리보기"></label>
         <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="1"><span class="plus">＋</span><strong>한 장 더</strong><small>Optional</small><img alt="두 번째 여행 사진 미리보기"></label>
         <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>Optional</small><img alt="세 번째 여행 사진 미리보기"></label>
-        <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="3"><span class="plus">＋</span><strong>네 번째 장면</strong><small>Optional</small><img alt="네 번째 여행 사진 미리보기"></label>
-        <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="4"><span class="plus">＋</span><strong>마지막 한 장</strong><small>Optional</small><img alt="다섯 번째 여행 사진 미리보기"></label>
       </div>
       <button class="primary-button" id="friendFindButton" disabled>여행지·시기·사진을 알려 주세요</button>
     </section>
@@ -258,6 +254,6 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
   <script src="destinations.js?v=7"></script>
-  <script src="app.js?v=28"></script>
+  <script src="app.js?v=29"></script>
 </body>
 </html>
