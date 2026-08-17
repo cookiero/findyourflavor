@@ -115,7 +115,7 @@ function rgbToLab([r,g,b]){
   return[116*fy-16,500*(fx-fy),200*(fy-fz)];
 }
 function labDistance(a,b){return(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2}
-async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,180/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,out=[];for(let i=0;i<d.length;i+=16){if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
+async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,220/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,available=Math.max(1,Math.floor(d.length/4)),step=Math.max(1,Math.floor(available/3200)),out=[];for(let pixel=0;pixel<available&&out.length<3200;pixel+=step){const i=pixel*4;if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
 async function analyzePhotoColors(files){
   let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>18000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/18000)===0);
   const histogram=new Map();for(const [r,g,b] of pixels){const key=`${r>>3},${g>>3},${b>>3}`,bin=histogram.get(key)||{sum:[0,0,0],n:0};bin.sum[0]+=r;bin.sum[1]+=g;bin.sum[2]+=b;bin.n++;histogram.set(key,bin)}
@@ -123,8 +123,8 @@ async function analyzePhotoColors(files){
   const k=Math.min(7,bins.length),seeds=[bins.reduce((best,bin)=>bin.n>best.n?bin:best,bins[0])];
   while(seeds.length<k){let best=null,bestScore=-1;for(const bin of bins){const distance=Math.min(...seeds.map(seed=>labDistance(bin.lab,seed.lab))),score=distance*Math.pow(bin.n,.55);if(score>bestScore){best=bin;bestScore=score}}seeds.push(best)}
   let centers=seeds.map(seed=>seed.rgb.slice());for(let step=0;step<12;step++){const centerLabs=centers.map(rgbToLab),groups=centers.map(()=>({sum:[0,0,0],n:0}));for(const bin of bins){let index=0,distance=Infinity;centerLabs.forEach((center,i)=>{const next=labDistance(bin.lab,center);if(next<distance){distance=next;index=i}});const group=groups[index];group.sum[0]+=bin.rgb[0]*bin.n;group.sum[1]+=bin.rgb[1]*bin.n;group.sum[2]+=bin.rgb[2]*bin.n;group.n+=bin.n}centers=groups.map((group,i)=>group.n?group.sum.map(value=>Math.round(value/group.n)):centers[i])}
-  const centerLabs=centers.map(rgbToLab),groups=centers.map(()=>({n:0}));for(const bin of bins){let index=0,distance=Infinity;centerLabs.forEach((center,i)=>{const next=labDistance(bin.lab,center);if(next<distance){distance=next;index=i}});groups[index].n+=bin.n}
-  const total=groups.reduce((sum,group)=>sum+group.n,0),result=groups.map((group,i)=>({rgb:centers[i],raw:group.n/total*100})).sort((a,b)=>b.raw-a.raw),rounded=result.map(item=>Math.max(1,Math.floor(item.raw)));let remaining=100-rounded.reduce((a,b)=>a+b,0);
+  const centerLabs=centers.map(rgbToLab),groups=centers.map(()=>({n:0,bins:[]}));for(const bin of bins){let index=0,distance=Infinity;centerLabs.forEach((center,i)=>{const next=labDistance(bin.lab,center);if(next<distance){distance=next;index=i}});groups[index].n+=bin.n;groups[index].bins.push(bin)}
+  const total=groups.reduce((sum,group)=>sum+group.n,0),result=groups.map((group,i)=>{const representative=group.bins.reduce((best,bin)=>labDistance(bin.lab,centerLabs[i])<labDistance(best.lab,centerLabs[i])?bin:best,group.bins[0]||{rgb:centers[i],lab:centerLabs[i]});return{rgb:representative.rgb,raw:group.n/total*100}}).sort((a,b)=>b.raw-a.raw),rounded=result.map(item=>Math.max(1,Math.floor(item.raw)));let remaining=100-rounded.reduce((a,b)=>a+b,0);
   for(let i=0;remaining>0;i++,remaining--)rounded[i%rounded.length]++;
   for(let i=0;remaining<0;i=(i+1)%rounded.length){if(rounded[i]>1){rounded[i]--;remaining++}}
   const names=result.map(item=>colorName(item.rgb)),duplicates=new Map();names.forEach((name,index)=>duplicates.set(name,[...(duplicates.get(name)||[]),index]));
@@ -140,9 +140,10 @@ async function requestAiAnalysis(files,context){
   const images=await Promise.all(files.map(imageForAi));
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
   const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
-  if(!response.ok)throw new Error('AI server unavailable');
-  return sanitizeStoryAnalysis((await response.json()).analysis);
+  const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.detail||payload.error||'편지를 굽지 못했어요.');
+  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.recipe_base_story)throw new Error('긴 레시피 편지가 완성되지 않았어요.');return analysis;
 }
+async function requestAnalysisWithRetry(files,context){try{return await requestAiAnalysis(files,context)}catch(firstError){if(files.length>2)return requestAiAnalysis(files.slice(0,2),context);throw firstError}}
 function sanitizeStoryText(value){
   if(typeof value!=='string')return value;
   const forbidden=/(?:EXIF|GPS|메타데이터|위치\s*데이터|좌표|위도|경도|촬영\s*(?:정보|시각|시간|일시)|카메라\s*(?:정보|기록)|파일\s*(?:정보|수정)|정보(?:를|을)?\s*(?:읽|확인)|데이터(?:를|을)?\s*(?:읽|확인))/i;
@@ -205,7 +206,7 @@ function renderTripLetter(flavor){
     'midnight-choco':'익숙한 낮보다 해가 진 뒤의 골목과 예상하지 못한 장면에서 여행의 진짜 재미를 발견한 것 같아요.'
   }[flavor.id];
   document.getElementById('tripPostmark').textContent=`${destination.toUpperCase()} · ${date.replace('-', '.')}`;
-  document.getElementById('resultReason').textContent=place?`${place.scene}에서 무엇을 바라보고 머물렀는지가 사진에 보여요. ${flavor.reason}`:flavor.reason;
+  document.getElementById('resultReason').textContent='쿠키님의 사진에서 가져온 재료 이야기를 다정하게 굽고 있어요.';
   document.getElementById('destinationKicker').textContent='MY COOKIE FROM';
   document.getElementById('destinationTitle').textContent=destination;
   document.getElementById('destinationScene').textContent=place?.scene||'아직 저장되지 않은 여행지라 사진에서 느껴지는 분위기만 조심스럽게 읽었어요.';
@@ -228,11 +229,11 @@ function renderTripLetter(flavor){
   }
   const palette=photoPalette||flavor.colors;
   document.getElementById('colorBar').innerHTML=palette.map(c=>`<i style="width:${c[2]}%;background:${c[1]}" title="${c[0]} ${c[2]}%"></i>`).join('');
-  document.getElementById('colorLegend').innerHTML=palette.map(c=>`<div><b style="background:${c[1]}"></b><span>${c[0]}</span><em>${c[2]}%</em></div>`).join('');
+  document.getElementById('colorLegend').innerHTML=palette.map(c=>`<div title="사진에서 추출한 실제 색 ${c[1].toUpperCase()}"><b style="background:${c[1]}"></b><span>${c[0]} <small>${c[1].toUpperCase()}</small></span><em>${c[2]}%</em></div>`).join('');
 }
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='여행을 쿠키로 굽는 중<span class="loading-dots"></span>';const stopBaking=startBaking(),minimum=pause(4300);
-  if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch{aiInsight=null}}
+  if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAnalysisWithRetry(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch(error){aiInsight=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}}
   const hash=await fingerprint(file); let flavor=flavors[hash%flavors.length];
   if(!fromFriend&&aiInsight)flavor=flavors.find(f=>f.name===aiInsight.flavor)||flavor;
   if(fromFriend&&friendBase&&flavor.id===friendBase.id&&hash%3!==0) flavor=flavors[(flavors.indexOf(flavor)+1)%flavors.length];
@@ -242,7 +243,7 @@ document.getElementById('findButton').addEventListener('click',()=>{prepareBakin
 async function beginFriendFinding(){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
-  try{friendAi=await requestAiAnalysis(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch{friendAi=null}
+  try{friendAi=await requestAnalysisWithRetry(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch(error){friendAi=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}
   const hash=await fingerprint(selected[0]);let flavor=friendAi?flavors.find(f=>f.name===friendAi.flavor):flavors[hash%flavors.length];if(!flavor)flavor=flavors[hash%flavors.length];
   await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)});
 }
@@ -270,7 +271,7 @@ function renderFriendAnalysis(flavor){
   document.getElementById('friendClosing').textContent=friendAi?.closing_message||`당신이 ${destination}에서 보낸 즐거운 시간이 사진에 다정하게 남아 있어요.`;
   document.getElementById('friendFilledJar').src=flavor.jar;
   document.getElementById('friendColorBar').innerHTML=palette.map(c=>`<i style="width:${c[2]}%;background:${c[1]}"></i>`).join('');
-  document.getElementById('friendColorLegend').innerHTML=palette.map(c=>`<div><b style="background:${c[1]}"></b><span>${c[0]}</span><em>${c[2]}%</em></div>`).join('');
+  document.getElementById('friendColorLegend').innerHTML=palette.map(c=>`<div title="사진에서 추출한 실제 색 ${c[1].toUpperCase()}"><b style="background:${c[1]}"></b><span>${c[0]} <small>${c[1].toUpperCase()}</small></span><em>${c[2]}%</em></div>`).join('');
 }
 function renderCompare(a,b){
   const same=a.id===b.id;

@@ -139,7 +139,7 @@ export default async function handler(req,res){
 - visual_ingredients는 단순 색 이름이 아니라 그 색이 만든 느낌까지 포함해 '한여름 끝에 남은 오렌지빛 열기 → 톡 터지는 Mango zest'처럼 시각 단서에서 쿠키 재료로 번역하세요.
 - recipe_base_story, recipe_cream_story, recipe_topping1_story, recipe_topping2_story는 각각 독립된 긴 문단으로 3~5문장을 쓰세요. 한 사진의 한 색만 근거로 끝내지 말고, 업로드된 여러 사진에서 반복되거나 서로 대비되는 구체적인 장면을 2개 이상 발견한 뒤 그 장면의 온도·질감·움직임을 충분히 해석하세요. 이어서 왜 그 감각이 해당 재료의 맛과 질감에 닮았는지 납득되게 설명하세요. 네 문단 모두 고정 레시피에 적힌 재료 이름을 한 번씩 정확히 사용하세요.
 - recipe_finish는 3~4문장으로 쓰세요. 사진 전체에 공통으로 남은 여행자의 시선과 오래 기억될 순간을 먼저 돌아본 뒤, 네 재료가 차례로 숨어 있는 Flavor로 구워졌다는 결론과 따뜻한 여운으로 끝내세요.
-- WHY THIS FLAVOR 전체는 최소 15문장 이상의 풍성한 편지가 되어야 합니다. 장소와 사물을 맞힌 사실은 재료를 설명하기 위한 근거로만 짧게 쓰고, 문장의 대부분을 감정·기억·맛의 질감을 연결하는 데 사용하세요.
+- WHY THIS FLAVOR 전체는 최소 15문장 이상의 풍성한 편지가 되어야 합니다. 장소와 사물을 맞힌 사실은 재료를 설명하기 위한 근거로만 짧게 쓰고, 문장의 대부분을 감정·기억·맛의 질감을 연결하는 데 사용하세요. 첫 문단은 '사진 속 여행은 밝은 풍경보다 밤이 깊어진 뒤의 도시를 오래 바라본 순간들을 더 많이 품고 있어요.'처럼 사진 여러 장을 관통하는 감정으로 시작하세요. 각 문단은 '그 위에는 초콜릿 가나슈를 두껍게 채웠어요.', '그런데 이 사진들은 마냥 차분하고 어둡지만은 않아요.', '마지막에는 솔트 크리스털을 조금 흩뿌렸어요.'처럼 자연스럽게 다음 재료로 이어지게 하세요.
 - 마크다운을 사용하지 마세요. Flavor나 장소 이름 앞뒤에 별표 두 개, 밑줄, 제목 기호를 붙이지 말고 일반 문장으로만 작성하세요.
 - 재료 이름을 합치거나 새로 만들지 마세요. 예를 들어 Lemon Cream의 '레몬 크림'과 '레몬 제스트'를 '레몬 제스트 글레이즈'로 바꾸면 안 됩니다. 베이스·크림·첫 토핑·두 번째 토핑은 반드시 서로 독립된 네 재료여야 합니다.
 - why_this_flavor는 장소 사실이 아니라 네 재료가 이 Flavor로 이어지는 이유를 1~2문장으로 요약하세요. recipe_finish는 '아마 시간이 조금 더 흐른 뒤 이 사진을 다시 본다면…'처럼 여행의 기억을 다시 열어주는 다정한 1~2문장으로 마무리하세요.
@@ -147,7 +147,7 @@ export default async function handler(req,res){
 - 표현은 실행마다 조금 달라도 괜찮지만 specific_place_observation, visual_ingredients, why_this_flavor, closing_message의 사실 근거와 핵심 메시지는 서로 모순되지 않아야 합니다.`;
   const content=[{type:'input_text',text:prompt},...images.map(image_url=>({type:'input_image',image_url,detail:'auto'}))];
   try{
-    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,input:[{role:'user',content}],tools:[{type:'web_search'}],text:{format:{type:'json_schema',name:'cookiero_travel_analysis',strict:true,schema}}})});
+    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,max_output_tokens:7000,input:[{role:'user',content}],text:{format:{type:'json_schema',name:'cookiero_travel_analysis',strict:true,schema}}})});
     const data=await response.json();
     if(!response.ok)return res.status(response.status).json({error:'AI analysis failed',detail:data?.error?.message||'Unknown error'});
     const text=data.output?.flatMap(x=>x.content||[]).find(x=>x.type==='output_text')?.text;
