@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Cookie:Ro — Find the Flavor</title>
+  <meta name="theme-color" content="#FFF8EC" />
+  <meta name="description" content="여행 사진 1~2장으로 이번 여행의 쿠키 맛을 찾아보세요." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-cookie">🍪</span><span class="brand-name">Cookie:Ro</span></div>
+      <button class="ghost-btn" id="resetBtn" type="button">처음부터</button>
+    </header>
+
+    <section class="screen active" id="screen-home">
+      <div class="hero-card">
+        <div class="crumbs-bg" aria-hidden="true">· · ｡ ° · ｡ ·</div>
+        <p class="eyebrow">FIND THE FLAVOR</p>
+        <h1>여행의 기억을<br><span>쿠키로 구워볼까요?</span></h1>
+        <p class="hero-copy">여행 사진 1~2장을 골라주세요.<br>Cookie:Ro가 이번 여행에 어울리는 맛을 찾아드릴게요.</p>
+        <button class="cookie-button" id="startBtn" type="button"><span class="paw">🐾</span></button>
+        <p class="tap-hint">쿠키를 눌러 시작하기</p>
+      </div>
+      <div class="flavor-strip">
+        <span>☁️ Cotton Candy</span><span>🍋 Lemon Cream</span><span>🥭 Mango Soda</span><span>🍵 Matcha Latte</span><span>🍫 Midnight Choco</span>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-upload">
+      <div class="section-head">
+        <p class="eyebrow">COLLECT CRUMBS</p>
+        <h2>이번 여행의 Crumbs를<br>골라주세요.</h2>
+        <p>가장 이 여행답다고 느껴지는 사진 1~2장이 좋아요.</p>
+      </div>
+      <label class="upload-zone" for="photoInput">
+        <input id="photoInput" type="file" accept="image/*" multiple />
+        <div class="upload-icon">＋</div><strong>사진 선택하기</strong><span>최대 2장 · JPG / PNG / HEIC</span>
+      </label>
+      <div class="preview-grid" id="previewGrid"></div>
+      <button class="primary-btn" id="analyzeBtn" type="button" disabled>Find My Flavor 🍪</button>
+      <p class="microcopy">파일럿 버전에서는 사진의 색감·밝기·분위기 신호를 바탕으로 5가지 Flavor 중 하나를 매칭합니다.</p>
+    </section>
+
+    <section class="screen" id="screen-loading">
+      <div class="loading-wrap">
+        <div class="oven"><div class="oven-window"><div class="baking-cookie">🍪</div></div></div>
+        <p class="eyebrow">FINDING YOUR FLAVOR...</p>
+        <h2 id="loadingText">사진 속 햇살과 색감을 보고 있어요.</h2>
+        <div class="progress"><span id="progressBar"></span></div>
+        <p class="loading-sub">이번 여행은 어떤 맛으로 남았을까요?</p>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-result">
+      <div class="result-card">
+        <p class="eyebrow">YOUR TRIP TASTES LIKE...</p>
+        <div class="flavor-cookie" id="flavorCookie"></div>
+        <div class="flavor-emoji" id="flavorEmoji">🥭</div>
+        <h2 id="flavorName">Mango Soda Cookie</h2>
+        <p class="flavor-tagline" id="flavorTagline"></p>
+        <div class="evidence" id="evidenceBox"></div>
+        <div class="feedback-block">
+          <p>이 맛, 내 여행이랑 잘 어울리나요?</p>
+          <div class="feedback-row">
+            <button class="pill-btn" data-feedback="yes">👍 잘 어울려요</button>
+            <button class="pill-btn" data-feedback="curious">🍪 다른 맛도 궁금해요</button>
+          </div>
+          <p class="feedback-msg" id="feedbackMsg"></p>
+        </div>
+        <button class="primary-btn" id="jarBtn" type="button">이 쿠키를 My Cookie Jar에 넣기</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-jar">
+      <div class="jar-scene">
+        <p class="eyebrow">MY COOKIE JAR</p>
+        <h2>첫 번째 쿠키가<br>Jar에 들어갔어요! 🍪</h2>
+        <div class="jar"><div class="jar-lid"></div><div class="jar-glass"><div class="jar-cookie" id="jarCookie"></div></div></div>
+        <p class="jar-copy" id="jarCopy"></p>
+        <div class="share-panel">
+          <h3>같이 여행한 친구도<br>같은 맛일까요?</h3>
+          <p>친구에게 보내고, 각자 고른 사진으로 같은 여행의 Flavor를 비교해보세요.</p>
+          <label class="name-label">내 이름<input id="senderName" maxlength="16" placeholder="예: Julie" /></label>
+          <button class="primary-btn" id="shareBtn" type="button">우리 여행, 같은 맛일까? 🍪</button>
+          <button class="secondary-btn" id="copyBtn" type="button">공유 링크 복사</button>
+          <p class="share-status" id="shareStatus"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-friend">
+      <div class="friend-hero">
+        <p class="eyebrow">A FRIEND SENT YOU A COOKIE</p>
+        <h2><span id="friendSender">친구</span>에게 이 여행은<br><span id="friendFlavorName">Mango Soda</span> 맛이었어요.</h2>
+        <p>당신에게도 같은 맛이었을까요?</p>
+        <div class="friend-flavor-chip" id="friendFlavorChip"></div>
+        <button class="primary-btn" id="friendStartBtn" type="button">내 사진으로 Flavor 찾아보기</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-match">
+      <div class="match-card">
+        <p class="eyebrow" id="matchEyebrow">FLAVOR MATCH</p><h2 id="matchTitle"></h2>
+        <div class="compare">
+          <div class="compare-card"><span class="compare-label" id="compareSenderLabel">친구</span><div class="mini-cookie" id="senderMiniCookie"></div><strong id="senderFlavorText"></strong></div>
+          <div class="compare-symbol">×</div>
+          <div class="compare-card"><span class="compare-label">나</span><div class="mini-cookie" id="receiverMiniCookie"></div><strong id="receiverFlavorText"></strong></div>
+        </div>
+        <p class="match-copy" id="matchCopy"></p>
+        <button class="primary-btn" id="shareResultBtn" type="button">비교 결과 공유하기</button>
+        <button class="secondary-btn" id="newTripBtn" type="button">내 다른 여행도 구워보기</button>
+      </div>
+    </section>
+  </main>
+  <canvas id="analysisCanvas" hidden></canvas>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#FFF8EC">
+  <meta name="description" content="여행 사진으로 발견하는 나의 Cookie:Ro Flavor">
+  <title>Cookie:Ro — Find the Flavor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="enhancements.css?v=5">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <img class="decor decor-sprinkles" src="assets/sprinkles.png" alt="">
+  <img class="decor decor-crumbs" src="assets/crumbs.png" alt="">
+
+  <main class="app-shell">
+    <header class="topbar">
+      <button class="brand-button" data-go="home" aria-label="처음으로">
+        <img src="assets/lettering-logo.png" alt="Cookie:Ro">
+      </button>
+      <div class="progress-dots" aria-label="진행 단계">
+        <i class="active"></i><i></i><i></i><i></i>
+      </div>
+    </header>
+
+    <section class="screen active" id="home" data-step="0">
+      <div class="hero-copy stagger">
+        <span class="eyebrow">A TASTE OF YOUR JOURNEY</span>
+        <h1>여행에는 저마다의<br><em>맛</em>이 있으니까.</h1>
+        <p>사진 1–2장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
+      </div>
+      <button class="hero-object" data-go="upload" aria-label="쿠키를 눌러 Find my flavor 시작하기">
+        <div class="orbit-copy">FIND YOUR FLAVOR · FIND YOUR FLAVOR ·</div>
+        <img src="assets/cookie-ring.png" alt="">
+        <span class="stamp">5<br><small>FLAVORS</small></span>
+        <span class="tap-cue">COOKIE를 눌러 시작 <b>→</b></span>
+      </button>
+      <button class="text-button" data-go="flavors">먼저 Flavor 구경하기</button>
+    </section>
+
+    <section class="screen" id="upload" data-step="1">
+      <button class="back-button" data-go="home">← Back</button>
+      <div class="section-heading">
+        <span class="eyebrow">YOUR PHOTO, YOUR FLAVOR</span>
+        <h2>어떤 여행이었나요?</h2>
+        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 힌트가 돼요.</p>
+      </div>
+      <div class="trip-fields" aria-label="여행 정보">
+        <label><span>어디에 다녀왔나요?</span><input id="destinationInput" type="text" placeholder="예: 제주, 교토, 로스앤젤레스" autocomplete="off" maxlength="40" list="destinationList"><datalist id="destinationList"></datalist></label>
+        <label><span>언제 다녀왔나요?</span><input id="dateInput" type="month"></label>
+      </div>
+      <div class="upload-grid" id="uploadGrid">
+        <label class="photo-slot">
+          <input type="file" accept="image/*" data-slot="0">
+          <span class="plus">＋</span><strong>첫 번째 장면</strong><small>Tap to add</small>
+          <img alt="첫 번째 여행 사진 미리보기">
+        </label>
+        <label class="photo-slot optional">
+          <input type="file" accept="image/*" data-slot="1">
+          <span class="plus">＋</span><strong>한 장 더</strong><small>Optional</small>
+          <img alt="두 번째 여행 사진 미리보기">
+        </label>
+      </div>
+      <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 분석을 위해서만 안전한 서버로 전송돼요.</p>
+      <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
+    </section>
+
+    <section class="screen loading-screen" id="loading" data-step="2" aria-live="polite">
+      <div class="mixing-bowl">
+        <img src="assets/cookie-ring.png" alt="Cookie:Ro 쿠키링">
+        <span class="scan-line"></span>
+      </div>
+      <span class="eyebrow">BAKING YOUR MOMENT</span>
+      <h2>Finding your flavor<span class="loading-dots"></span></h2>
+      <p id="loadingText">사진 속 색감을 천천히 섞는 중</p>
+      <div class="loading-bar"><i></i></div>
+    </section>
+
+    <section class="screen result-screen" id="result" data-step="3">
+      <button class="back-button" data-go="upload">← Try again</button>
+      <div class="result-intro">
+        <span class="eyebrow">YOUR TRAVEL FLAVOR IS</span>
+        <span class="analysis-mode" id="analysisMode">PHOTO ANALYSIS</span>
+        <div class="trip-postmark" id="tripPostmark">YOUR JOURNEY</div>
+        <h2 id="resultName">Mango Soda</h2>
+        <p class="flavor-note" id="resultTagline">햇살을 발견하면 망설임 없이 뛰어드는 맛</p>
+      </div>
+      <div class="result-cookie-wrap">
+        <span class="flavor-number" id="flavorNumber">03 / 05</span>
+        <span class="halo"></span>
+        <img id="resultCookie" src="assets/mango-soda.png" alt="Mango Soda Cookie">
+      </div>
+      <article class="reason-card">
+        <span>WHY THIS FLAVOR?</span>
+        <p id="resultReason">밝은 색과 탁 트인 장면이 많아요. 계획보다는 그날의 기분을 따라 움직이고, 작은 순간도 축제로 만드는 여행자예요.</p>
+        <div class="trait-row" id="traitRow"></div>
+      </article>
+      <article class="destination-card">
+        <header><span id="destinationKicker">DESTINATION NOTE</span><h3 id="destinationTitle">로스앤젤레스에서 보낸 시간</h3></header>
+        <div class="destination-facts">
+          <section><small>SCENERY</small><p id="destinationScene"></p></section>
+          <section><small>YOUR WAY</small><p id="destinationExperience"></p></section>
+          <section><small>LOCAL TASTE</small><p id="destinationFood"></p></section>
+        </div>
+      </article>
+      <article class="color-recipe">
+        <span class="eyebrow">YOUR PHOTO PALETTE</span><h3>사진에서 직접 읽은 색의 비율</h3>
+        <div class="color-bar" id="colorBar" aria-label="Flavor 색상 비율"></div>
+        <div class="color-legend" id="colorLegend"></div>
+      </article>
+      <article class="travel-letter">
+        <header><span class="eyebrow">A LETTER FROM COOKIE:RO</span><h3 id="letterTitle">그날의 여행을 천천히 떠올려 봤어요.</h3></header>
+        <div class="letter-sections">
+          <section><span>01 · THE MOMENT</span><p id="photoStory"></p></section>
+          <section><span>02 · YOUR WAY</span><p id="travelStyle"></p></section>
+          <section><span>03 · SEASON NOTE</span><p id="seasonStory"></p></section>
+          <section class="food-note"><span>04 · A TASTE TO REMEMBER</span><p id="foodStory"></p><a class="local-source" id="localSource" href="#" target="_blank" rel="noopener" hidden>지역 정보 확인하기 ↗</a></section>
+        </div>
+        <p class="closing-note" id="closingNote"></p>
+      </article>
+      <div class="jar-story">
+        <div class="jar-copy">
+          <span class="eyebrow">SAVED IN YOUR JAR</span>
+          <h3>오늘의 맛을<br>담아두었어요.</h3>
+          <p>여행의 기억은 사라지지 않고<br>나만의 취향으로 차곡차곡 쌓여요.</p>
+        </div>
+        <div class="jar-stage">
+          <img class="filled-jar-image" id="filledJar" src="assets/mango-soda-jar.png" alt="Mango Soda Cookie가 담긴 Cookie:Ro 유리 jar">
+        </div>
+      </div>
+      <div class="share-card">
+        <span class="eyebrow">TASTE IT TOGETHER</span>
+        <h3>우리 여행,<br>같은 맛일까?</h3>
+        <p>친구에게 링크를 보내고 두 사람의 Flavor를 비교해 보세요.</p>
+        <button class="primary-button" id="shareButton">친구에게 Flavor 보내기 <span>↗</span></button>
+        <p class="share-status" id="shareStatus" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="screen" id="friend" data-step="1">
+      <div class="friend-invite">
+        <span class="eyebrow">A FLAVOR FROM YOUR FRIEND</span>
+        <img id="friendCookie" src="assets/mango-soda.png" alt="친구의 Flavor Cookie">
+        <p><strong id="friendFlavor">Mango Soda</strong> 맛 친구가<br>함께 비교해 보고 싶대요.</p>
+      </div>
+      <div class="section-heading compact">
+        <h2>내 여행은 어떤 맛일까?</h2>
+        <p>사진을 한 장 골라 두 사람의 케미를 확인해요.</p>
+      </div>
+      <label class="photo-slot friend-slot">
+        <input type="file" accept="image/*" id="friendInput">
+        <span class="plus">＋</span><strong>내 여행 사진 고르기</strong><small>Tap to add</small>
+        <img alt="내 여행 사진 미리보기">
+      </label>
+      <button class="primary-button" id="friendFindButton" disabled>사진을 먼저 골라 주세요</button>
+    </section>
+
+    <section class="screen compare-screen" id="compare" data-step="3">
+      <span class="eyebrow">OUR TRAVEL TASTE</span>
+      <h2 id="matchTitle">Same trip,<br>different flavor.</h2>
+      <div class="cookie-pair">
+        <div><img id="compareA" alt="친구의 쿠키"><strong id="compareNameA"></strong><small>FRIEND</small></div>
+        <span class="pair-mark">×</span>
+        <div><img id="compareB" alt="나의 쿠키"><strong id="compareNameB"></strong><small>ME</small></div>
+      </div>
+      <article class="match-card">
+        <span id="matchLabel">A DELICIOUS DIFFERENCE</span>
+        <p id="matchCopy"></p>
+      </article>
+      <button class="primary-button" data-go="home">나도 친구에게 보내기 <span>→</span></button>
+    </section>
+
+    <section class="screen flavors-screen" id="flavors" data-step="0">
+      <button class="back-button" data-go="home">← Back</button>
+      <span class="eyebrow">THE COOKIE:RO COLLECTION</span>
+      <h2>Five ways<br>to travel.</h2>
+      <img class="five-flavors" src="assets/five-flavors.png" alt="Cotton Candy, Lemon Cream, Mango Soda, Matcha Latte, Midnight Choco 쿠키 5종">
+      <button class="primary-button" data-go="upload">내 Flavor 찾기 <span>→</span></button>
+    </section>
+  </main>
+
+  <footer><span>COOKIE:RO</span><span>FIND THE FLAVOR © 2026</span></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
+  <script src="destinations.js?v=6"></script>
+  <script src="app.js?v=6"></script>
+</body>
+</html>
