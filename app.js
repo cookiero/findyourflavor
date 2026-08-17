@@ -141,7 +141,7 @@ async function requestAiAnalysis(files,context){
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
   const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
   const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.detail||payload.error||'편지를 굽지 못했어요.');
-  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.why_this_flavor||analysis.why_this_flavor.length<700)throw new Error('긴 레시피 편지가 완성되지 않았어요.');return analysis;
+  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.flavor||!analysis?.why_this_flavor||analysis.why_this_flavor.length<700)throw new Error('Flavor 편지를 완성하지 못했어요.');return analysis;
 }
 async function requestAnalysisWithRetry(files,context){try{return await requestAiAnalysis(files,context)}catch(firstError){try{return await requestAiAnalysis(files.length>2?files.slice(0,2):files,context)}catch{throw firstError}}}
 function sanitizeStoryText(value){
@@ -221,11 +221,6 @@ function renderTripLetter(flavor){
   document.getElementById('closingNote').textContent=`당신이 ${destination}에서 보낸 시간은 충분히 즐거웠고, 그 행복이 사진에 다정하게 남아 있어요.`;
   if(aiInsight){
     document.getElementById('resultReason').textContent=recipeLetter(aiInsight)||aiInsight.why_this_flavor;
-    document.getElementById('photoStory').textContent=[aiInsight.specific_place_observation,aiInsight.capture_time_note,aiInsight.scene_observation,aiInsight.warm_observation].filter(Boolean).join(' ');
-    document.getElementById('travelStyle').textContent=aiInsight.travel_style;
-    document.getElementById('seasonStory').textContent=aiInsight.season_note;
-    document.getElementById('foodStory').textContent=aiInsight.local_food_question;
-    document.getElementById('closingNote').textContent=aiInsight.closing_message;
   }
   const palette=photoPalette||flavor.colors;
   document.getElementById('colorBar').innerHTML=palette.map(c=>`<i style="width:${c[2]}%;background:${c[1]}" title="${c[0]} ${c[2]}%"></i>`).join('');
@@ -234,7 +229,7 @@ function renderTripLetter(flavor){
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='여행을 쿠키로 굽는 중<span class="loading-dots"></span>';const stopBaking=startBaking(),minimum=pause(4300);
   if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAnalysisWithRetry(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch(error){aiInsight=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}}
-  if(!fromFriend&&!aiInsight){await minimum;stopBaking();showScreen('upload');toast('긴 레시피 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
+  if(!fromFriend&&!aiInsight){await minimum;stopBaking();showScreen('upload');toast('Flavor 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
   const hash=await fingerprint(file); let flavor=flavors[hash%flavors.length];
   if(!fromFriend&&aiInsight)flavor=flavors.find(f=>f.name===aiInsight.flavor)||flavor;
   if(fromFriend&&friendBase&&flavor.id===friendBase.id&&hash%3!==0) flavor=flavors[(flavors.indexOf(flavor)+1)%flavors.length];
@@ -245,7 +240,7 @@ async function beginFriendFinding(){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
   try{friendAi=await requestAnalysisWithRetry(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch(error){friendAi=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}
-  if(!friendAi){await minimum;stopBaking();showScreen('friend');toast('긴 레시피 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
+  if(!friendAi){await minimum;stopBaking();showScreen('friend');toast('Flavor 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
   const hash=await fingerprint(selected[0]);let flavor=friendAi?flavors.find(f=>f.name===friendAi.flavor):flavors[hash%flavors.length];if(!flavor)flavor=flavors[hash%flavors.length];
   await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)});
 }
@@ -266,11 +261,11 @@ function renderFriendAnalysis(flavor){
   document.getElementById('friendExperience').textContent=place?.experience||'사진 속 장면을 자신의 속도로 천천히 즐긴 여행';
   document.getElementById('friendFood').textContent=place?.foodQuestion||`${destination}에서 가장 기억에 남은 음식은 무엇이었나요?`;
   setFlavorLetterTitle(document.getElementById('friendLetterTitle'),destination,flavor);
-  document.getElementById('friendPhotoStory').textContent=friendAi?[friendAi.specific_place_observation,friendAi.capture_time_note,friendAi.scene_observation,friendAi.warm_observation].filter(Boolean).join(' '):`${place?.scene||destination}의 분위기 속에서 편안하게 여행을 즐긴 모습이 느껴져요. 사진 밖에서도 좋은 이야기가 이어졌을 것 같아요.`;
-  document.getElementById('friendTravelStyle').textContent=friendAi?.travel_style||`${place?.experience||'마음에 머무는 장면을 천천히 발견하는 여행'}이었을 것 같아요. 그래서 ${flavor.name}의 맛을 담았어요.`;
-  document.getElementById('friendSeasonStory').textContent=friendAi?.season_note||`${month}월의 ${destination}은 ${season}에 가까워요. ${seasonNote}라서 그때만의 빛과 온도를 더 풍성하게 만났을 거예요.`;
-  document.getElementById('friendFoodStory').textContent=friendAi?.local_food_question||place?.foodQuestion||`${destination}에서 가장 맛있었던 한 입은 무엇이었나요?`;
-  document.getElementById('friendClosing').textContent=friendAi?.closing_message||`당신이 ${destination}에서 보낸 즐거운 시간이 사진에 다정하게 남아 있어요.`;
+  document.getElementById('friendPhotoStory').textContent=`${place?.scene||destination}의 분위기 속에서 편안하게 여행을 즐긴 모습이 느껴져요. 사진 밖에서도 좋은 이야기가 이어졌을 것 같아요.`;
+  document.getElementById('friendTravelStyle').textContent=`${place?.experience||'마음에 머무는 장면을 천천히 발견하는 여행'}이었을 것 같아요. 그래서 ${flavor.name}의 맛을 담았어요.`;
+  document.getElementById('friendSeasonStory').textContent=`${month}월의 ${destination}은 ${season}에 가까워요. ${seasonNote}라서 그때만의 빛과 온도를 더 풍성하게 만났을 거예요.`;
+  document.getElementById('friendFoodStory').textContent=place?.foodQuestion||`${destination}에서 가장 맛있었던 한 입은 무엇이었나요?`;
+  document.getElementById('friendClosing').textContent=`당신이 ${destination}에서 보낸 즐거운 시간이 사진에 다정하게 남아 있어요.`;
   document.getElementById('friendFilledJar').src=flavor.jar;
   document.getElementById('friendColorBar').innerHTML=palette.map(c=>`<i style="width:${c[2]}%;background:${c[1]}"></i>`).join('');
   document.getElementById('friendColorLegend').innerHTML=palette.map(c=>`<div title="사진에서 추출한 실제 색 ${c[1].toUpperCase()}"><b style="background:${c[1]}"></b><span>${c[0]} <small>${c[1].toUpperCase()}</small></span><em>${c[2]}%</em></div>`).join('');
