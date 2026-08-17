@@ -118,15 +118,14 @@ async function finishBaking(flavor,next){
   stage.dataset.phase='done';copy.textContent='오늘의 맛을 담아두었어요.';playBakingChime('jar');await pause(850);next();
 }
 function renderResult(flavor){
-  currentFlavor=flavor; const n=flavors.indexOf(flavor)+1;
+  currentFlavor=flavor;
   document.getElementById('resultName').textContent=flavor.name;
   document.getElementById('resultTagline').textContent=flavor.tagline;
   document.getElementById('resultReason').textContent=flavor.reason;
-  document.getElementById('flavorNumber').textContent=String(n).padStart(2,'0')+' / 05';
   const cookie=document.getElementById('resultCookie');cookie.src=flavor.file;cookie.alt=flavor.name+' Cookie';
   const jar=document.getElementById('filledJar');jar.src=flavor.jar;jar.alt=`${flavor.name} Cookie가 담긴 Cookie:Ro 유리 jar`;
   document.getElementById('traitRow').innerHTML=flavor.traits.map(t=>`<i>${t}</i>`).join('');
-  const mode=document.getElementById('analysisMode');mode.textContent=aiInsight?'AI + PHOTO ANALYSIS':'LOCAL PHOTO ANALYSIS';mode.classList.toggle('ai',!!aiInsight);
+  document.getElementById('analysisMode').textContent='BAKED FROM YOUR PHOTOS';
   renderTripLetter(flavor);
 }
 function renderTripLetter(flavor){

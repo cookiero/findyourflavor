@@ -8,9 +8,9 @@
   <title>Cookie:Ro — Find the Flavor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=9">
-  <link rel="stylesheet" href="enhancements.css?v=9">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="enhancements.css?v=10">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -65,7 +65,7 @@
           <img alt="두 번째 여행 사진 미리보기">
         </label>
       </div>
-      <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 사진·촬영 시각·GPS가 있는 경우 위치를 분석에만 사용하며 저장하지 않아요.</p>
+      <p class="privacy-note">사진·촬영 시각·GPS가 있는 경우, 당신의 Flavor를 굽는 동안에만 사용하며 따로 저장하지 않아요.</p>
       <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
     </section>
 
@@ -87,13 +87,12 @@
       <button class="back-button" data-go="upload">← Try again</button>
       <div class="result-intro">
         <span class="eyebrow">YOUR TRAVEL FLAVOR IS</span>
-        <span class="analysis-mode" id="analysisMode">PHOTO ANALYSIS</span>
+        <span class="analysis-mode" id="analysisMode">BAKED FROM YOUR PHOTOS</span>
         <div class="trip-postmark" id="tripPostmark">YOUR JOURNEY</div>
         <h2 id="resultName">Mango Soda</h2>
         <p class="flavor-note" id="resultTagline">햇살을 발견하면 망설임 없이 뛰어드는 맛</p>
       </div>
       <div class="result-cookie-wrap">
-        <span class="flavor-number" id="flavorNumber">03 / 05</span>
         <span class="halo"></span>
         <img id="resultCookie" src="assets/mango-soda.png" alt="Mango Soda Cookie">
       </div>
@@ -247,6 +246,6 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
   <script src="destinations.js?v=7"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
