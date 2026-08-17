@@ -141,9 +141,9 @@ async function requestAiAnalysis(files,context){
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
   const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
   const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.detail||payload.error||'편지를 굽지 못했어요.');
-  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.flavor||!analysis?.why_this_flavor||analysis.why_this_flavor.length<700)throw new Error('Flavor 편지를 완성하지 못했어요.');return analysis;
+  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.flavor||!analysis?.why_this_flavor)throw new Error('Flavor 편지를 완성하지 못했어요.');return analysis;
 }
-async function requestAnalysisWithRetry(files,context){try{return await requestAiAnalysis(files,context)}catch(firstError){try{return await requestAiAnalysis(files.length>2?files.slice(0,2):files,context)}catch{throw firstError}}}
+async function requestAnalysisWithRetry(files,context){return requestAiAnalysis(files,context)}
 function sanitizeStoryText(value){
   if(typeof value!=='string')return value;
   const forbidden=/(?:EXIF|GPS|메타데이터|위치\s*데이터|좌표|위도|경도|촬영\s*(?:정보|시각|시간|일시)|카메라\s*(?:정보|기록)|파일\s*(?:정보|수정)|정보(?:를|을)?\s*(?:읽|확인)|데이터(?:를|을)?\s*(?:읽|확인))/i;

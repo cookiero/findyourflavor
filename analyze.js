@@ -2,7 +2,7 @@ const schema={
   type:'object',additionalProperties:false,
   properties:{
     flavor:{type:'string',enum:['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco']},
-    why_this_flavor:{type:'string',description:'결과의 핵심. 베이스, 크림, 첫 토핑, 두 번째 토핑, 여행의 시선, Flavor 완성, 마지막 여운을 각각 독립 문단으로 쓴 최소 18문장의 길고 섬세한 Cookie:Ro 편지'}
+    why_this_flavor:{type:'string',description:'결과의 핵심. 베이스, 크림, 첫 토핑, 두 번째 토핑, 여행의 시선, Flavor 완성, 마지막 여운을 각각 독립 문단으로 충분히 길고 섬세하게 쓴 Cookie:Ro 편지'}
   },
   required:['flavor','why_this_flavor']
 };
@@ -57,17 +57,6 @@ const flavorRecipes={
   }
 };
 
-async function resolveGpsPlace(exif){
-  const point=(Array.isArray(exif)?exif:[]).find(item=>Number.isFinite(item?.latitude)&&Number.isFinite(item?.longitude));
-  if(!point)return null;
-  const lat=Math.max(-90,Math.min(90,point.latitude)),lon=Math.max(-180,Math.min(180,point.longitude));
-  try{
-    const response=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`,{headers:{'User-Agent':'CookieRo-FindYourFlavor/1.0','Accept-Language':'ko,en;q=0.8'}});
-    if(!response.ok)return null;const data=await response.json();
-    return {display_name:String(data?.display_name||'').slice(0,500),name:String(data?.name||'').slice(0,160),category:String(data?.category||''),type:String(data?.type||''),address:data?.address||{}};
-  }catch{return null;}
-}
-
 function keepTheMagic(value){
   if(Array.isArray(value))return value.map(keepTheMagic);
   if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,keepTheMagic(item)]));
@@ -89,24 +78,25 @@ function keepTheMagic(value){
 
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+  if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'Flavor letter is not configured'});
   const {destination,date,images,palette,exif}=req.body||{};
   if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
   if(images.some(x=>typeof x!=='string'||x.length>1_500_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
   const flavorAnchor=stableFlavor(palette);
   const recipe=flavorRecipes[flavorAnchor];
-  const gpsPlace=await resolveGpsPlace(exif);
+  const locationHints=(Array.isArray(exif)?exif:[]).map(item=>({latitude:Number.isFinite(item?.latitude)?item.latitude:null,longitude:Number.isFinite(item?.longitude)?item.longitude:null,time_hint:item?.time_hint||null}));
   const prompt=`당신은 여행 사진을 쿠키 레시피로 번역하는 Cookie:Ro의 다정한 편지 작가입니다.
 
 여행지: ${destination}
 여행 시기: ${date}
-사진과 일치할 때만 조용히 참고할 장소 정보: ${JSON.stringify(gpsPlace)}
+사진과 일치할 때만 조용히 참고할 위치 단서: ${JSON.stringify(locationHints)}
 사진 픽셀에서 직접 추출한 색과 비율: ${JSON.stringify(palette||[])}
 반드시 유지할 Flavor: ${flavorAnchor}
 반드시 사용할 고정 레시피: ${JSON.stringify(recipe)}
 
 출력은 flavor와 why_this_flavor 두 항목뿐입니다. flavor는 반드시 '${flavorAnchor}'로 쓰세요.
 
-why_this_flavor는 빈 줄로 구분된 7개 문단, 최소 18문장의 길고 감성적인 한국어 편지로 작성하세요.
+why_this_flavor는 빈 줄로 구분된 7개 문단으로 충분히 길고 감성적인 한국어 편지를 작성하세요.
 1문단은 사진 전체를 관통하는 감정과 실제 장면을 2개 이상 짚고, 왜 '${recipe.base}'가 첫맛이 되었는지 4문장 이상 설명합니다.
 2문단은 반복되는 색·빛·온도·질감을 2개 이상 짚고, 왜 '${recipe.cream}'을 채웠는지 4문장 이상 설명합니다.
 3문단은 실제로 보이는 움직임·옷차림·표정·사물의 포인트를 2개 이상 짚고, 왜 '${recipe.topping1}'을 올렸는지 4문장 이상 설명합니다.
@@ -118,7 +108,7 @@ why_this_flavor는 빈 줄로 구분된 7개 문단, 최소 18문장의 길고 �
 장소나 사물을 맞힌 사실보다 감정·기억·맛의 질감이 중심이어야 합니다. 사진에 없는 사람·표정·옷차림은 꾸며내지 마세요. 같은 색 하나를 네 재료의 근거로 반복하지 마세요. 장소 정보의 출처나 기술 용어를 말하지 마세요. 정확한 촬영 날짜와 숫자 시각을 쓰지 마세요. 재료 이름을 합치거나 새로 만들지 말고 '${recipe.base}', '${recipe.cream}', '${recipe.topping1}', '${recipe.topping2}'를 각각 정확히 사용하세요. 마크다운과 별표를 사용하지 마세요. 보고서가 아니라 여행을 함께 돌아보는 사람의 따뜻한 말투로 쓰세요.`;
   const content=[{type:'input_text',text:prompt},...images.map(image_url=>({type:'input_image',image_url,detail:'auto'}))];
   try{
-    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,max_output_tokens:5000,input:[{role:'user',content}],text:{format:{type:'json_schema',name:'cookiero_flavor_letter',strict:true,schema}}})});
+    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,input:[{role:'user',content}],tools:[{type:'web_search'}],text:{format:{type:'json_schema',name:'cookiero_flavor_letter',strict:true,schema}}})});
     const data=await response.json();
     if(!response.ok)return res.status(response.status).json({error:'Flavor letter failed',detail:data?.error?.message||'Unknown error'});
     const text=data.output?.flatMap(item=>item.content||[]).find(item=>item.type==='output_text')?.text;
