@@ -81,17 +81,24 @@ async function fingerprint(file){
 function colorName([r,g,b]){
   const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min,v=max/255,light=(max+min)/510,s=delta===0?0:delta/(255*(1-Math.abs(2*light-1))||1);let h=0;
   if(delta){if(max===r)h=((g-b)/delta)%6;else if(max===g)h=(b-r)/delta+2;else h=(r-g)/delta+4;h=(h*60+360)%360}
-  if(s<.13){if(v<.2)return'깊은 먹빛';if(v<.42)return'차콜 그레이';if(v<.68)return'포근한 회갈빛';if(v<.9)return'부드러운 회백빛';return'맑은 크림빛'}
-  if(h<15||h>=345)return light>.72?'코랄 핑크':light<.3?'와인 레드':'선명한 레드';
-  if(h<42)return light>.7?'살구 오렌지':light<.32?'구운 브라운':'햇살 오렌지';
-  if(h<70)return light>.72?'버터 옐로':light<.34?'머스터드 옐로':'골든 옐로';
+  if(s<.1){if(v<.2)return'잉크 블랙';if(v<.42)return'차콜 그레이';if(v<.68)return'스톤 그레이';if(v<.9)return'소프트 그레이';return'오프화이트'}
+  if(s<.24){
+    if(h<48||h>=345){if(light>.78)return'웜 아이보리';if(light>.6)return'웜 그레이지';if(light>.38)return'토프 브라운';return'브라운 블랙'}
+    if(h<82){if(light>.76)return'샌드 베이지';if(light>.48)return'카키 베이지';return'딥 카키'}
+    if(h<175){if(light>.7)return'세이지 미스트';if(light>.38)return'세이지 그레이';return'포레스트 그레이'}
+    if(h<255){if(light>.72)return'미스트 블루';if(light>.4)return'슬레이트 블루';return'블루 블랙'}
+    if(h<345){if(light>.72)return'라일락 그레이';if(light>.4)return'모브 그레이';return'플럼 그레이'}
+  }
+  if(h<15||h>=345)return light>.72?'코랄 핑크':light<.3?'와인 레드':s<.48?'브릭 레드':'클리어 레드';
+  if(h<42){if(s<.42)return light>.65?'피치 베이지':'카멜 브라운';return light>.7?'애프리콧 오렌지':light<.32?'번트 브라운':'비비드 오렌지'}
+  if(h<70){if(s<.4)return light>.68?'버터 베이지':'머스터드 브라운';return light>.72?'버터 옐로':light<.34?'머스터드 옐로':'골든 옐로'}
   if(h<92)return light<.3?'딥 올리브':'올리브 그린';
   if(h<135)return light<.27?'깊은 숲빛':s<.28?'세이지 그린':light>.68?'새싹 연두':'잎사귀 초록';
   if(h<168)return light<.3?'짙은 청록':'에메랄드 그린';
   if(h<198)return light>.7?'민트 블루':'청량한 터쿼이즈';
-  if(h<250)return light>.72?'하늘 블루':light<.3?'딥 오션 블루':'선명한 블루';
+  if(h<250)return light>.72?'스카이 블루':light<.3?'딥 오션 블루':s<.48?'더스티 블루':'클리어 블루';
   if(h<285)return light>.7?'라벤더 퍼플':light<.3?'딥 퍼플':'바이올렛';
-  if(h<330)return light>.72?'파스텔 핑크':light<.3?'플럼 퍼플':'로지 핑크';
+  if(h<330)return light>.72?'파스텔 핑크':light<.3?'플럼 퍼플':s<.48?'더스티 로즈':'로지 핑크';
   return light>.7?'피치 핑크':'베리 핑크';
 }
 function rgbToLab([r,g,b]){
@@ -118,7 +125,8 @@ async function analyzePhotoColors(files){
   return result.map((item,i)=>{const hex='#'+item.rgb.map(value=>value.toString(16).padStart(2,'0')).join('');return[names[i],hex,rounded[i]]});
 }
 async function imageForAi(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,1280/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.78))};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('사진을 읽지 못했어요.'))};img.src=url})}
-async function readPhotoExif(file){const fallback={file_name:file.name,file_modified:new Date(file.lastModified).toISOString()};if(!window.exifr)return fallback;try{const data=await window.exifr.parse(file,{tiff:true,exif:true,gps:true});return{...fallback,taken_at:data?.DateTimeOriginal||data?.CreateDate||null,latitude:Number.isFinite(data?.latitude)?data.latitude:null,longitude:Number.isFinite(data?.longitude)?data.longitude:null,camera:[data?.Make,data?.Model].filter(Boolean).join(' ')||null}}catch{return fallback}}
+// 좌표와 아주 넓은 시간대만 메모리에서 잠시 참고한다. 정확한 시각·날짜·카메라 정보는 보내지 않는다.
+async function readPhotoExif(file){if(!window.exifr)return{};try{const data=await window.exifr.parse(file,{exif:true,gps:true}),taken=data?.DateTimeOriginal||data?.CreateDate;let time_hint=null;if(taken instanceof Date&&!Number.isNaN(taken.getTime())){const hour=taken.getHours();time_hint=hour<6?'night':hour<11?'morning':hour<16?'daylight':hour<20?'evening':'night'}return{latitude:Number.isFinite(data?.latitude)?data.latitude:null,longitude:Number.isFinite(data?.longitude)?data.longitude:null,time_hint}}catch{return{}}}
 async function requestAiAnalysis(files,context){
   if(location.protocol==='file:')return null;
   const {destination,date,palette,exif}=context,place=findPlace(destination);
@@ -126,8 +134,16 @@ async function requestAiAnalysis(files,context){
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
   const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
   if(!response.ok)throw new Error('AI server unavailable');
-  return (await response.json()).analysis;
+  return sanitizeStoryAnalysis((await response.json()).analysis);
 }
+function sanitizeStoryText(value){
+  if(typeof value!=='string')return value;
+  const forbidden=/(?:EXIF|GPS|메타데이터|위치\s*데이터|좌표|위도|경도|촬영\s*(?:정보|시각|시간|일시)|카메라\s*(?:정보|기록)|파일\s*(?:정보|수정)|정보(?:를|을)?\s*(?:읽|확인)|데이터(?:를|을)?\s*(?:읽|확인))/i;
+  const clean=value.replace(/\r?\n+/g,' ').split(/(?<=[.!?。]|요\.|다\.)\s+/).filter(sentence=>!forbidden.test(sentence)).join(' ').replace(/\b\d{4}[-./년]\s*\d{1,2}[-./월]\s*\d{1,2}(?:일)?(?:\s*(?:오전|오후)?\s*\d{1,2}[:시]\d{0,2}(?::\d{2})?)?/g,'').replace(/\s{2,}/g,' ').trim();
+  return clean||'사진에 남은 빛과 색을 천천히 쿠키의 재료로 옮겨 보았어요.';
+}
+function sanitizeStoryAnalysis(value){if(Array.isArray(value))return value.map(sanitizeStoryAnalysis);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,sanitizeStoryAnalysis(item)]));return sanitizeStoryText(value)}
+function recipeLetter(analysis){return[analysis?.recipe_base_story,analysis?.recipe_cream_story,analysis?.recipe_topping1_story,analysis?.recipe_topping2_story,analysis?.recipe_finish].filter(Boolean).join(' ')}
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let bakingAudio=null;
 function prepareBakingAudio(){
@@ -196,7 +212,7 @@ function renderTripLetter(flavor){
   const source=document.getElementById('localSource');source.hidden=!place?.source;if(place?.source)source.href=place.source;
   document.getElementById('closingNote').textContent=`당신이 ${destination}에서 보낸 시간은 충분히 즐거웠고, 그 행복이 사진에 다정하게 남아 있어요.`;
   if(aiInsight){
-    document.getElementById('resultReason').textContent=aiInsight.why_this_flavor;
+    document.getElementById('resultReason').textContent=recipeLetter(aiInsight)||aiInsight.why_this_flavor;
     document.getElementById('photoStory').textContent=[aiInsight.specific_place_observation,aiInsight.capture_time_note,aiInsight.scene_observation,aiInsight.warm_observation].filter(Boolean).join(' ');
     document.getElementById('travelStyle').textContent=aiInsight.travel_style;
     document.getElementById('seasonStory').textContent=aiInsight.season_note;
