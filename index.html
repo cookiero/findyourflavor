@@ -8,9 +8,9 @@
   <title>Cookie:Ro — Find the Flavor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=7">
-  <link rel="stylesheet" href="enhancements.css?v=7">
+  <link rel="stylesheet" href="enhancements.css?v=9">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -34,10 +34,14 @@
         <p>사진 1–3장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
       </div>
       <button class="hero-object" data-go="upload" aria-label="쿠키를 눌러 Find my flavor 시작하기">
-        <div class="orbit-copy">FIND YOUR FLAVOR · FIND YOUR FLAVOR ·</div>
+        <svg class="orbit-copy" viewBox="0 0 400 400" aria-hidden="true">
+          <defs><path id="flavorArcTop" d="M 38 174 Q 200 12 362 174"></path><path id="flavorArcBottom" d="M 38 232 Q 200 390 362 232"></path></defs>
+          <text class="orbit-text orbit-text-top"><textPath href="#flavorArcTop" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+          <text class="orbit-text orbit-text-bottom"><textPath href="#flavorArcBottom" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+        </svg>
         <img src="assets/cookie-ring.png" alt="">
         <span class="stamp">5<br><small>FLAVORS</small></span>
-        <span class="tap-cue">COOKIE를 눌러 시작 <b>→</b></span>
+        <span class="tap-cue">쿠키를 눌러 시작해요 <b>→</b></span>
       </button>
       <button class="text-button" data-go="flavors">먼저 Flavor 구경하기</button>
     </section>
@@ -45,9 +49,9 @@
     <section class="screen" id="upload" data-step="1">
       <button class="back-button" data-go="home">← Back</button>
       <div class="section-heading">
-        <span class="eyebrow">YOUR PHOTO, YOUR FLAVOR</span>
+        <span class="eyebrow">YOUR CRUMBS, YOUR FLAVOR</span>
         <h2>어떤 여행이었나요?</h2>
-        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 힌트가 돼요.</p>
+        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 재료가 돼요.</p>
       </div>
       <div class="trip-fields" aria-label="여행 정보">
         <label><span>어디에 다녀왔나요?</span><input id="destinationInput" type="text" placeholder="예: 제주, 교토, 로스앤젤레스" autocomplete="off" maxlength="40" list="destinationList"><datalist id="destinationList"></datalist></label>
@@ -71,14 +75,16 @@
     </section>
 
     <section class="screen loading-screen" id="loading" data-step="2" aria-live="polite">
-      <div class="mixing-bowl">
-        <img src="assets/cookie-ring.png" alt="Cookie:Ro 쿠키링">
-        <span class="scan-line"></span>
+      <div class="baking-stage" id="bakingStage" data-phase="dough">
+        <div class="oven-glow" aria-hidden="true"></div>
+        <img class="baking-cookie" id="bakingCookie" src="assets/cookie-ring.png" alt="천천히 구워지고 있는 Cookie:Ro 쿠키">
+        <span class="baking-spark spark-one" aria-hidden="true">✦</span><span class="baking-spark spark-two" aria-hidden="true">✦</span>
+        <div class="loading-jar" aria-hidden="true"><img src="assets/cookie-jar.png" alt=""></div>
+        <span class="bake-sound" aria-hidden="true"></span>
       </div>
       <span class="eyebrow">BAKING YOUR MOMENT</span>
-      <h2>Finding your flavor<span class="loading-dots"></span></h2>
-      <p id="loadingText">사진 속 색감을 천천히 섞는 중</p>
-      <div class="loading-bar"><i></i></div>
+      <h2 id="loadingTitle">여행을 쿠키로 굽는 중<span class="loading-dots"></span></h2>
+      <p id="loadingText">사진에서 여행의 재료를 찾는 중...</p>
     </section>
 
     <section class="screen result-screen" id="result" data-step="3">
