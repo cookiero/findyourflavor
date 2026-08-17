@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=10">
-  <link rel="stylesheet" href="enhancements.css?v=10">
+  <link rel="stylesheet" href="enhancements.css?v=13">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -34,10 +34,17 @@
         <p>사진 1–2장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
       </div>
       <button class="hero-object" data-go="upload" aria-label="쿠키를 눌러 Find my flavor 시작하기">
-        <div class="orbit-copy">FIND YOUR FLAVOR · FIND YOUR FLAVOR ·</div>
+        <svg class="orbit-copy" viewBox="0 0 400 400" aria-hidden="true">
+          <defs>
+            <path id="flavorArcTop" d="M 38 174 Q 200 12 362 174"></path>
+            <path id="flavorArcBottom" d="M 38 232 Q 200 390 362 232"></path>
+          </defs>
+          <text class="orbit-text orbit-text-top"><textPath href="#flavorArcTop" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+          <text class="orbit-text orbit-text-bottom"><textPath href="#flavorArcBottom" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+        </svg>
         <img src="assets/cookie-ring.png" alt="">
         <span class="stamp">5<br><small>FLAVORS</small></span>
-        <span class="tap-cue">COOKIE를 눌러 시작 <b>→</b></span>
+        <span class="tap-cue">쿠키를 눌러 시작해요 <b>→</b></span>
       </button>
       <button class="text-button" data-go="flavors">먼저 Flavor 구경하기</button>
     </section>
@@ -45,9 +52,9 @@
     <section class="screen" id="upload" data-step="1">
       <button class="back-button" data-go="home">← Back</button>
       <div class="section-heading">
-        <span class="eyebrow">YOUR PHOTO, YOUR FLAVOR</span>
+        <span class="eyebrow">YOUR CRUMBS, YOUR FLAVOR</span>
         <h2>어떤 여행이었나요?</h2>
-        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 힌트가 돼요.</p>
+        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 재료가 돼요.</p>
       </div>
       <div class="trip-fields" aria-label="여행 정보">
         <label><span>어디에 다녀왔나요?</span><input id="destinationInput" type="text" placeholder="예: 제주, 교토, 로스앤젤레스" autocomplete="off" maxlength="40" list="destinationList"><datalist id="destinationList"></datalist></label>
@@ -65,13 +72,12 @@
           <img alt="두 번째 여행 사진 미리보기">
         </label>
       </div>
-      <p class="privacy-note">사진·촬영 시각·GPS가 있는 경우, 당신의 Flavor를 굽는 동안에만 사용하며 따로 저장하지 않아요.</p>
+      <p class="privacy-note">사진은 당신의 Flavor를 굽는 동안에만 사용하며 따로 저장하지 않아요.</p>
       <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
     </section>
 
     <section class="screen loading-screen" id="loading" data-step="2" aria-live="polite">
       <div class="baking-stage" id="bakingStage" data-phase="dough">
-        <span class="oven-label" aria-hidden="true">OVEN 01 · YOUR JOURNEY IS BAKING</span>
         <div class="oven-glow" aria-hidden="true"></div>
         <img class="baking-cookie" id="bakingCookie" src="assets/cookie-ring.png" alt="천천히 구워지고 있는 Cookie:Ro 쿠키">
         <span class="baking-spark spark-one" aria-hidden="true">✦</span><span class="baking-spark spark-two" aria-hidden="true">✦</span>
@@ -87,7 +93,7 @@
       <button class="back-button" data-go="upload">← Try again</button>
       <div class="result-intro">
         <span class="eyebrow">YOUR TRAVEL FLAVOR IS</span>
-        <span class="analysis-mode" id="analysisMode">BAKED FROM YOUR PHOTOS</span>
+        <span class="analysis-mode" id="analysisMode">BAKED FROM YOUR CRUMBS</span>
         <div class="trip-postmark" id="tripPostmark">YOUR JOURNEY</div>
         <h2 id="resultName">Mango Soda</h2>
         <p class="flavor-note" id="resultTagline">햇살을 발견하면 망설임 없이 뛰어드는 맛</p>
@@ -102,7 +108,7 @@
         <div class="trait-row" id="traitRow"></div>
       </article>
       <article class="destination-card">
-        <header><span id="destinationKicker">DESTINATION NOTE</span><h3 id="destinationTitle">로스앤젤레스에서 보낸 시간</h3></header>
+        <header><span id="destinationKicker">MY COOKIE FROM</span><h3 id="destinationTitle">로스앤젤레스</h3></header>
         <div class="destination-facts">
           <section><small>SCENERY</small><p id="destinationScene"></p></section>
           <section><small>YOUR WAY</small><p id="destinationExperience"></p></section>
@@ -135,7 +141,7 @@
         </div>
       </div>
       <div class="share-card">
-        <span class="eyebrow">TASTE IT TOGETHER</span>
+        <span class="eyebrow">SHARE A BITE</span>
         <h3>우리 여행,<br>같은 맛일까?</h3>
         <p>친구에게 링크를 보내고 두 사람의 Flavor를 비교해 보세요.</p>
         <button class="primary-button" id="shareButton">친구에게 Flavor 보내기 <span>↗</span></button>
@@ -144,12 +150,12 @@
       <section class="waitlist-card">
         <span class="eyebrow">COOKIE:RO BAKERY · COMING SOON</span>
         <h3>아직 오븐은<br>예열 중이에요.</h3>
-        <p>Cookie:Ro Bakery가 문을 열면<br>당신의 여행으로 만든 첫 쿠키를 가장 먼저 알려드릴게요.</p>
+        <p>당신의 여행으로 만든 첫 쿠키를<br>가장 먼저 알려드릴게요.</p>
         <form class="waitlist-form" data-waitlist-form>
-          <label><span>이름</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 닉네임" required></label>
-          <label><span>이메일</span><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="hello@example.com" required></label>
+          <label><span>이름 / 별명</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 별명" required></label>
+          <label><span>연락처</span><input name="contact" type="text" autocomplete="off" maxlength="254" placeholder="카카오톡 ID / 이메일 / 전화번호 중 하나" required></label>
           <input class="honey-field" name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label class="consent-row"><input name="consent" type="checkbox" required><span>출시 소식 수신과 대기명단 등록에 동의해요.</span></label>
+          <label class="consent-row"><input name="consent" type="checkbox" required><span>남겨주신 연락처로 출시 소식을 받는 데 동의해요.</span></label>
           <button class="primary-button" type="submit">🍪 첫 쿠키 예약해두기</button>
           <p class="waitlist-status" role="status" aria-live="polite"></p>
         </form>
@@ -198,7 +204,7 @@
           <div class="color-bar" id="friendColorBar"></div><div class="color-legend" id="friendColorLegend"></div>
         </article>
         <article class="destination-card">
-          <header><span>DESTINATION NOTE</span><h3 id="friendDestinationTitle"></h3></header>
+          <header><span>MY COOKIE FROM</span><h3 id="friendDestinationTitle"></h3></header>
           <div class="destination-facts">
             <section><small>SCENERY</small><p id="friendScene"></p></section>
             <section><small>YOUR WAY</small><p id="friendExperience"></p></section>
@@ -221,12 +227,12 @@
       <section class="waitlist-card compact-waitlist">
         <span class="eyebrow">COOKIE:RO BAKERY · COMING SOON</span>
         <h3>아직 오븐은 예열 중이에요.</h3>
-        <p>문을 여는 날, 가장 먼저 소식을 전해드릴게요.</p>
+        <p>당신의 여행으로 만든 첫 쿠키를<br>가장 먼저 알려드릴게요.</p>
         <form class="waitlist-form" data-waitlist-form>
-          <label><span>이름</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 닉네임" required></label>
-          <label><span>이메일</span><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="hello@example.com" required></label>
+          <label><span>이름 / 별명</span><input name="name" type="text" autocomplete="name" maxlength="60" placeholder="이름 또는 별명" required></label>
+          <label><span>연락처</span><input name="contact" type="text" autocomplete="off" maxlength="254" placeholder="카카오톡 ID / 이메일 / 전화번호 중 하나" required></label>
           <input class="honey-field" name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label class="consent-row"><input name="consent" type="checkbox" required><span>출시 소식 수신과 대기명단 등록에 동의해요.</span></label>
+          <label class="consent-row"><input name="consent" type="checkbox" required><span>남겨주신 연락처로 출시 소식을 받는 데 동의해요.</span></label>
           <button class="primary-button" type="submit">🍪 첫 쿠키 예약해두기</button>
           <p class="waitlist-status" role="status" aria-live="polite"></p>
         </form>
@@ -246,6 +252,6 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
   <script src="destinations.js?v=7"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

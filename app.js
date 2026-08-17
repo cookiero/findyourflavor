@@ -78,9 +78,45 @@ async function fingerprint(file){
   for(let i=0;i<data.length;i+=Math.max(1,Math.floor(data.length/1500))) hash=Math.imul(hash^data[i],16777619);
   return Math.abs(hash);
 }
-function colorName([r,g,b]){const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,v=max/255,s=max?d/max:0;let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h=(h*60+360)%360}if(v<.2)return'깊은 먹빛';if(v>.9&&s<.12)return'맑은 크림빛';if(s<.16)return v>.68?'포근한 회백빛':'차분한 회갈빛';if(h<15||h>=345)return v>.72?'코랄 레드':'딥 레드';if(h<45)return v>.78?'햇살 오렌지':'따뜻한 브라운';if(h<70)return'골든 옐로';if(h<165)return s<.42?'세이지 그린':'싱그러운 그린';if(h<205)return'민트 블루';if(h<255)return v>.7?'하늘 블루':'딥 오션 블루';if(h<290)return'라벤더 퍼플';if(h<345)return'로지 핑크';return'여행의 색'}
+function colorName([r,g,b]){
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min,v=max/255,light=(max+min)/510,s=delta===0?0:delta/(255*(1-Math.abs(2*light-1))||1);let h=0;
+  if(delta){if(max===r)h=((g-b)/delta)%6;else if(max===g)h=(b-r)/delta+2;else h=(r-g)/delta+4;h=(h*60+360)%360}
+  if(s<.13){if(v<.2)return'깊은 먹빛';if(v<.42)return'차콜 그레이';if(v<.68)return'포근한 회갈빛';if(v<.9)return'부드러운 회백빛';return'맑은 크림빛'}
+  if(h<15||h>=345)return light>.72?'코랄 핑크':light<.3?'와인 레드':'선명한 레드';
+  if(h<42)return light>.7?'살구 오렌지':light<.32?'구운 브라운':'햇살 오렌지';
+  if(h<70)return light>.72?'버터 옐로':light<.34?'머스터드 옐로':'골든 옐로';
+  if(h<92)return light<.3?'딥 올리브':'올리브 그린';
+  if(h<135)return light<.27?'깊은 숲빛':s<.28?'세이지 그린':light>.68?'새싹 연두':'잎사귀 초록';
+  if(h<168)return light<.3?'짙은 청록':'에메랄드 그린';
+  if(h<198)return light>.7?'민트 블루':'청량한 터쿼이즈';
+  if(h<250)return light>.72?'하늘 블루':light<.3?'딥 오션 블루':'선명한 블루';
+  if(h<285)return light>.7?'라벤더 퍼플':light<.3?'딥 퍼플':'바이올렛';
+  if(h<330)return light>.72?'파스텔 핑크':light<.3?'플럼 퍼플':'로지 핑크';
+  return light>.7?'피치 핑크':'베리 핑크';
+}
+function rgbToLab([r,g,b]){
+  let [x,y,z]=[r,g,b].map(value=>{value/=255;return value>.04045?((value+.055)/1.055)**2.4:value/12.92});
+  const X=(x*.4124+y*.3576+z*.1805)/.95047,Y=(x*.2126+y*.7152+z*.0722),Z=(x*.0193+y*.1192+z*.9505)/1.08883;
+  const f=value=>value>.008856?Math.cbrt(value):7.787*value+16/116,fx=f(X),fy=f(Y),fz=f(Z);
+  return[116*fy-16,500*(fx-fy),200*(fy-fz)];
+}
+function labDistance(a,b){return(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2}
 async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,180/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,out=[];for(let i=0;i<d.length;i+=16){if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
-async function analyzePhotoColors(files){let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>12000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/12000)===0);const picks=[.08,.34,.62,.9].map(q=>pixels[Math.min(pixels.length-1,Math.floor(pixels.length*q))].slice());let groups=[];for(let step=0;step<9;step++){groups=picks.map(()=>({sum:[0,0,0],n:0}));for(const p of pixels){let bi=0,bd=Infinity;picks.forEach((c,i)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(d<bd){bd=d;bi=i}});const g=groups[bi];g.sum[0]+=p[0];g.sum[1]+=p[1];g.sum[2]+=p[2];g.n++}groups.forEach((g,i)=>{if(g.n)picks[i]=g.sum.map(v=>Math.round(v/g.n))})}const total=groups.reduce((s,g)=>s+g.n,0);let result=groups.map((g,i)=>({rgb:picks[i],raw:g.n/total*100})).filter(x=>x.raw>.15).sort((a,b)=>b.raw-a.raw);const floors=result.map(x=>Math.floor(x.raw));let remaining=100-floors.reduce((a,b)=>a+b,0);for(let i=0;i<remaining;i++)floors[i%floors.length]++;return result.map((x,i)=>{const hex='#'+x.rgb.map(v=>v.toString(16).padStart(2,'0')).join('');return[colorName(x.rgb),hex,floors[i]]})}
+async function analyzePhotoColors(files){
+  let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>18000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/18000)===0);
+  const histogram=new Map();for(const [r,g,b] of pixels){const key=`${r>>3},${g>>3},${b>>3}`,bin=histogram.get(key)||{sum:[0,0,0],n:0};bin.sum[0]+=r;bin.sum[1]+=g;bin.sum[2]+=b;bin.n++;histogram.set(key,bin)}
+  const bins=[...histogram.values()].map(bin=>({rgb:bin.sum.map(value=>Math.round(value/bin.n)),n:bin.n}));bins.forEach(bin=>bin.lab=rgbToLab(bin.rgb));
+  const k=Math.min(7,bins.length),seeds=[bins.reduce((best,bin)=>bin.n>best.n?bin:best,bins[0])];
+  while(seeds.length<k){let best=null,bestScore=-1;for(const bin of bins){const distance=Math.min(...seeds.map(seed=>labDistance(bin.lab,seed.lab))),score=distance*Math.pow(bin.n,.55);if(score>bestScore){best=bin;bestScore=score}}seeds.push(best)}
+  let centers=seeds.map(seed=>seed.rgb.slice());for(let step=0;step<12;step++){const centerLabs=centers.map(rgbToLab),groups=centers.map(()=>({sum:[0,0,0],n:0}));for(const bin of bins){let index=0,distance=Infinity;centerLabs.forEach((center,i)=>{const next=labDistance(bin.lab,center);if(next<distance){distance=next;index=i}});const group=groups[index];group.sum[0]+=bin.rgb[0]*bin.n;group.sum[1]+=bin.rgb[1]*bin.n;group.sum[2]+=bin.rgb[2]*bin.n;group.n+=bin.n}centers=groups.map((group,i)=>group.n?group.sum.map(value=>Math.round(value/group.n)):centers[i])}
+  const centerLabs=centers.map(rgbToLab),groups=centers.map(()=>({n:0}));for(const bin of bins){let index=0,distance=Infinity;centerLabs.forEach((center,i)=>{const next=labDistance(bin.lab,center);if(next<distance){distance=next;index=i}});groups[index].n+=bin.n}
+  const total=groups.reduce((sum,group)=>sum+group.n,0),result=groups.map((group,i)=>({rgb:centers[i],raw:group.n/total*100})).sort((a,b)=>b.raw-a.raw),rounded=result.map(item=>Math.max(1,Math.floor(item.raw)));let remaining=100-rounded.reduce((a,b)=>a+b,0);
+  for(let i=0;remaining>0;i++,remaining--)rounded[i%rounded.length]++;
+  for(let i=0;remaining<0;i=(i+1)%rounded.length){if(rounded[i]>1){rounded[i]--;remaining++}}
+  const names=result.map(item=>colorName(item.rgb)),duplicates=new Map();names.forEach((name,index)=>duplicates.set(name,[...(duplicates.get(name)||[]),index]));
+  duplicates.forEach(indices=>{if(indices.length<2)return;indices.sort((a,b)=>result[a].rgb.reduce((sum,value)=>sum+value,0)-result[b].rgb.reduce((sum,value)=>sum+value,0));const modifiers=indices.length===2?['짙은','밝은']:indices.length===3?['짙은','선명한','밝은']:['깊은','짙은','선명한','밝은','여린'];indices.forEach((index,rank)=>{names[index]=`${modifiers[Math.min(rank,modifiers.length-1)]} ${names[index]}`})});
+  return result.map((item,i)=>{const hex='#'+item.rgb.map(value=>value.toString(16).padStart(2,'0')).join('');return[names[i],hex,rounded[i]]});
+}
 async function imageForAi(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,1280/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.78))};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('사진을 읽지 못했어요.'))};img.src=url})}
 async function readPhotoExif(file){const fallback={file_name:file.name,file_modified:new Date(file.lastModified).toISOString()};if(!window.exifr)return fallback;try{const data=await window.exifr.parse(file,{tiff:true,exif:true,gps:true});return{...fallback,taken_at:data?.DateTimeOriginal||data?.CreateDate||null,latitude:Number.isFinite(data?.latitude)?data.latitude:null,longitude:Number.isFinite(data?.longitude)?data.longitude:null,camera:[data?.Make,data?.Model].filter(Boolean).join(' ')||null}}catch{return fallback}}
 async function requestAiAnalysis(files,context){
@@ -125,8 +161,12 @@ function renderResult(flavor){
   const cookie=document.getElementById('resultCookie');cookie.src=flavor.file;cookie.alt=flavor.name+' Cookie';
   const jar=document.getElementById('filledJar');jar.src=flavor.jar;jar.alt=`${flavor.name} Cookie가 담긴 Cookie:Ro 유리 jar`;
   document.getElementById('traitRow').innerHTML=flavor.traits.map(t=>`<i>${t}</i>`).join('');
-  document.getElementById('analysisMode').textContent='BAKED FROM YOUR PHOTOS';
+  document.getElementById('analysisMode').textContent='BAKED FROM YOUR CRUMBS';
   renderTripLetter(flavor);
+}
+function setFlavorLetterTitle(element,destination,flavor){
+  const emoji={'lemon-cream':'🍋','mango-soda':'🥭','cotton-candy':'🍭','midnight-choco':'🍫','matcha-latte':'🍃'}[flavor.id]||'🍪';
+  element.replaceChildren(document.createTextNode(`${destination}에서 가져온`),document.createElement('br'),document.createTextNode(`다정한 한 조각 ${emoji}`));
 }
 function renderTripLetter(flavor){
   const destination=document.getElementById('destinationInput').value.trim()||'그곳';
@@ -143,12 +183,12 @@ function renderTripLetter(flavor){
   }[flavor.id];
   document.getElementById('tripPostmark').textContent=`${destination.toUpperCase()} · ${date.replace('-', '.')}`;
   document.getElementById('resultReason').textContent=place?`${place.scene}에서 무엇을 바라보고 머물렀는지가 사진에 보여요. ${flavor.reason}`:flavor.reason;
-  document.getElementById('destinationKicker').textContent=`CURATED DESTINATION · ${place?'55 PLACES':'UNLISTED'}`;
-  document.getElementById('destinationTitle').textContent=`${destination}에서 보낸 시간`;
+  document.getElementById('destinationKicker').textContent='MY COOKIE FROM';
+  document.getElementById('destinationTitle').textContent=destination;
   document.getElementById('destinationScene').textContent=place?.scene||'아직 저장되지 않은 여행지라 사진에서 느껴지는 분위기만 조심스럽게 읽었어요.';
   document.getElementById('destinationExperience').textContent=place?.experience||'다음 업데이트에서 이 지역만의 여행 방식과 계절을 더 정확히 담을게요.';
   document.getElementById('destinationFood').textContent=place?.foodQuestion||`${destination}에서 가장 기억에 남은 음식은 무엇이었나요?`;
-  document.getElementById('letterTitle').textContent=`${destination}에서 가져온 다정한 한 조각`;
+  setFlavorLetterTitle(document.getElementById('letterTitle'),destination,flavor);
   document.getElementById('photoStory').textContent=`사진을 보고 가장 먼저 느껴진 건 ‘참 잘 다녀왔구나’ 하는 마음이었어요. ${where}에서 애써 꾸민 표정보다 순간을 편안하게 누리는 기분이 보여요. 사진 밖에서도 웃음이 이어졌을 것처럼 행복해 보여요.`;
   document.getElementById('travelStyle').textContent=`${flavorStyle} ${place?.experience||''} 그래서 이 여행에는 ${flavor.name}의 맛을 담았어요. 사진 속 색과 여백, 장면을 고른 시선이 ${flavor.tagline.replace(' 맛',' 마음')}과 꼭 닮아 있었거든요.`;
   document.getElementById('seasonStory').textContent=`${month}월의 ${destination}은 ${season}에 가까워요. ${seasonNote}라서 같은 장소라도 지금만의 온도와 색을 더 풍성하게 만났을 거예요. 그 시기에 다녀왔기에 평범한 산책도 조금 더 특별했을 것 같아요.`;
@@ -195,11 +235,11 @@ function renderFriendAnalysis(flavor){
   const destination=document.getElementById('friendDestinationInput').value.trim(),date=document.getElementById('friendDateInput').value,month=Number(date.split('-')[1]),place=findPlace(destination),[season,seasonNote]=localSeason(place,month),palette=friendPalette||flavor.colors;
   document.getElementById('friendResultTitle').textContent=flavor.name;
   document.getElementById('friendResultTagline').textContent=flavor.tagline;
-  document.getElementById('friendDestinationTitle').textContent=`${destination}에서 보낸 시간`;
+  document.getElementById('friendDestinationTitle').textContent=destination;
   document.getElementById('friendScene').textContent=place?.scene||`${destination}에서 발견한 빛과 표정`;
   document.getElementById('friendExperience').textContent=place?.experience||'사진 속 장면을 자신의 속도로 천천히 즐긴 여행';
   document.getElementById('friendFood').textContent=place?.foodQuestion||`${destination}에서 가장 기억에 남은 음식은 무엇이었나요?`;
-  document.getElementById('friendLetterTitle').textContent=`${destination}에서 가져온 다정한 한 조각`;
+  setFlavorLetterTitle(document.getElementById('friendLetterTitle'),destination,flavor);
   document.getElementById('friendPhotoStory').textContent=friendAi?[friendAi.specific_place_observation,friendAi.capture_time_note,friendAi.scene_observation,friendAi.warm_observation].filter(Boolean).join(' '):`${place?.scene||destination}의 분위기 속에서 편안하게 여행을 즐긴 모습이 느껴져요. 사진 밖에서도 좋은 이야기가 이어졌을 것 같아요.`;
   document.getElementById('friendTravelStyle').textContent=friendAi?.travel_style||`${place?.experience||'마음에 머무는 장면을 천천히 발견하는 여행'}이었을 것 같아요. 그래서 ${flavor.name}의 맛을 담았어요.`;
   document.getElementById('friendSeasonStory').textContent=friendAi?.season_note||`${month}월의 ${destination}은 ${season}에 가까워요. ${seasonNote}라서 그때만의 빛과 온도를 더 풍성하게 만났을 거예요.`;
@@ -225,7 +265,7 @@ document.querySelectorAll('[data-waitlist-form]').forEach(form=>form.addEventLis
   button.disabled=true;button.textContent='반죽을 준비하는 중...';status.textContent='';
   const source=location.hash.includes('friend=')?'friend_share':'find_your_flavor';
   try{
-    const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:data.get('name'),email:data.get('email'),source,flavor:currentFlavor?.name||friendBase?.name||null,page_url:location.href})});
+    const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:data.get('name'),contact:data.get('contact'),source,flavor:currentFlavor?.name||friendBase?.name||null,page_url:location.href})});
     const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'등록하지 못했어요.');
     form.classList.add('is-complete');status.innerHTML='<strong>반죽해두었어요. 🍪</strong><br>Cookie:Ro Bakery가 문을 여는 날 가장 먼저 알려드릴게요.';
   }catch(error){status.textContent=error.message||'잠시 후 다시 시도해 주세요.';button.disabled=false;button.textContent='🍪 첫 쿠키 예약해두기'}
