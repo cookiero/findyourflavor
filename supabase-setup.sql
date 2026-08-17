@@ -3,13 +3,32 @@ create table if not exists public.waitlist (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   name text not null check (char_length(name) between 1 and 60),
-  email text not null unique check (char_length(email) between 3 and 254),
-  source text not null default 'find_your_flavor' check (source in ('find_your_flavor', 'friend_share')),
+  email text unique check (char_length(email) between 3 and 254),
+  contact text not null unique check (char_length(contact) between 2 and 254),
+  contact_type text not null check (contact_type in ('email', 'phone', 'kakao')),
+  source text not null default 'find_your_flavor' check (source in ('find_your_flavor', 'friend_share', 'ios_testflight')),
   flavor text,
   page_url text
 );
 
+-- 기존 이메일 전용 waitlist를 새 연락처 한 칸 구조로 안전하게 확장합니다.
+alter table public.waitlist add column if not exists contact text;
+alter table public.waitlist add column if not exists contact_type text;
+update public.waitlist set contact=lower(email), contact_type='email' where contact is null and email is not null;
+alter table public.waitlist alter column email drop not null;
+alter table public.waitlist alter column contact set not null;
+alter table public.waitlist alter column contact_type set not null;
+alter table public.waitlist drop constraint if exists waitlist_contact_check;
+alter table public.waitlist add constraint waitlist_contact_check check (char_length(contact) between 2 and 254);
+alter table public.waitlist drop constraint if exists waitlist_contact_type_check;
+alter table public.waitlist add constraint waitlist_contact_type_check check (contact_type in ('email', 'phone', 'kakao'));
+alter table public.waitlist drop constraint if exists waitlist_source_check;
+alter table public.waitlist add constraint waitlist_source_check check (source in ('find_your_flavor', 'friend_share', 'ios_testflight'));
+create unique index if not exists waitlist_contact_unique on public.waitlist (contact);
+
 alter table public.waitlist enable row level security;
 
 comment on table public.waitlist is 'Cookie:Ro Bakery launch waitlist. Private; accessed by the Vercel server with the service-role key.';
-comment on column public.waitlist.source is 'find_your_flavor or friend_share';
+comment on column public.waitlist.contact is 'Email, normalized phone number, or KakaoTalk ID.';
+comment on column public.waitlist.contact_type is 'email, phone, or kakao';
+comment on column public.waitlist.source is 'find_your_flavor, friend_share, or ios_testflight';

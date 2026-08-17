@@ -141,17 +141,17 @@ async function requestAiAnalysis(files,context){
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
   const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
   const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.detail||payload.error||'편지를 굽지 못했어요.');
-  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.recipe_base_story)throw new Error('긴 레시피 편지가 완성되지 않았어요.');return analysis;
+  const analysis=sanitizeStoryAnalysis(payload.analysis);if(!analysis?.why_this_flavor||analysis.why_this_flavor.length<700)throw new Error('긴 레시피 편지가 완성되지 않았어요.');return analysis;
 }
-async function requestAnalysisWithRetry(files,context){try{return await requestAiAnalysis(files,context)}catch(firstError){if(files.length>2)return requestAiAnalysis(files.slice(0,2),context);throw firstError}}
+async function requestAnalysisWithRetry(files,context){try{return await requestAiAnalysis(files,context)}catch(firstError){try{return await requestAiAnalysis(files.length>2?files.slice(0,2):files,context)}catch{throw firstError}}}
 function sanitizeStoryText(value){
   if(typeof value!=='string')return value;
   const forbidden=/(?:EXIF|GPS|메타데이터|위치\s*데이터|좌표|위도|경도|촬영\s*(?:정보|시각|시간|일시)|카메라\s*(?:정보|기록)|파일\s*(?:정보|수정)|정보(?:를|을)?\s*(?:읽|확인)|데이터(?:를|을)?\s*(?:읽|확인))/i;
-  const clean=value.replace(/\*\*/g,'').replace(/\r?\n+/g,' ').split(/(?<=[.!?。]|요\.|다\.)\s+/).filter(sentence=>!forbidden.test(sentence)).join(' ').replace(/\b\d{4}[-./년]\s*\d{1,2}[-./월]\s*\d{1,2}(?:일)?(?:\s*(?:오전|오후)?\s*\d{1,2}[:시]\d{0,2}(?::\d{2})?)?/g,'').replace(/\s{2,}/g,' ').trim();
+  const clean=value.replace(/\r?\n{2,}/g,' §PARAGRAPH§ ').replace(/\*\*/g,'').replace(/\r?\n/g,' ').split(/(?<=[.!?。]|요\.|다\.)\s+/).filter(sentence=>!forbidden.test(sentence)).join(' ').replace(/\b\d{4}[-./년]\s*\d{1,2}[-./월]\s*\d{1,2}(?:일)?(?:\s*(?:오전|오후)?\s*\d{1,2}[:시]\d{0,2}(?::\d{2})?)?/g,'').replace(/\s{2,}/g,' ').replace(/\s*§PARAGRAPH§\s*/g,'\n\n').trim();
   return clean||'사진에 남은 빛과 색을 천천히 쿠키의 재료로 옮겨 보았어요.';
 }
 function sanitizeStoryAnalysis(value){if(Array.isArray(value))return value.map(sanitizeStoryAnalysis);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,sanitizeStoryAnalysis(item)]));return sanitizeStoryText(value)}
-function recipeLetter(analysis){return[analysis?.recipe_base_story,analysis?.recipe_cream_story,analysis?.recipe_topping1_story,analysis?.recipe_topping2_story,analysis?.recipe_finish].filter(Boolean).join('\n\n')}
+function recipeLetter(analysis){return analysis?.why_this_flavor||''}
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let bakingAudio=null;
 function prepareBakingAudio(){
@@ -234,6 +234,7 @@ function renderTripLetter(flavor){
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='여행을 쿠키로 굽는 중<span class="loading-dots"></span>';const stopBaking=startBaking(),minimum=pause(4300);
   if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAnalysisWithRetry(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch(error){aiInsight=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}}
+  if(!fromFriend&&!aiInsight){await minimum;stopBaking();showScreen('upload');toast('긴 레시피 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
   const hash=await fingerprint(file); let flavor=flavors[hash%flavors.length];
   if(!fromFriend&&aiInsight)flavor=flavors.find(f=>f.name===aiInsight.flavor)||flavor;
   if(fromFriend&&friendBase&&flavor.id===friendBase.id&&hash%3!==0) flavor=flavors[(flavors.indexOf(flavor)+1)%flavors.length];
@@ -244,6 +245,7 @@ async function beginFriendFinding(){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
   try{friendAi=await requestAnalysisWithRetry(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch(error){friendAi=null;window.cookieRoAnalysisError=error?.message||'분석 요청 실패'}
+  if(!friendAi){await minimum;stopBaking();showScreen('friend');toast('긴 레시피 편지를 완성하지 못했어요. 잠시 후 다시 구워주세요.');return}
   const hash=await fingerprint(selected[0]);let flavor=friendAi?flavors.find(f=>f.name===friendAi.flavor):flavors[hash%flavors.length];if(!flavor)flavor=flavors[hash%flavors.length];
   await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)});
 }
