@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5">
-  <link rel="stylesheet" href="enhancements.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="enhancements.css?v=7">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -148,20 +148,23 @@
         <p><strong id="friendFlavor">Mango Soda</strong> 맛 친구가<br>함께 비교해 보고 싶대요.</p>
       </div>
       <div class="section-heading compact">
-        <h2>내 여행은 어떤 맛일까?</h2>
-        <p>사진을 한 장 골라 두 사람의 케미를 확인해요.</p>
+        <h2>내 여행은<br>어떤 맛일까?</h2>
+        <p>여행 정보와 사진을 골라 두 사람의 케미를 확인해요.</p>
       </div>
-      <label class="photo-slot friend-slot">
-        <input type="file" accept="image/*" id="friendInput">
-        <span class="plus">＋</span><strong>내 여행 사진 고르기</strong><small>Tap to add</small>
-        <img alt="내 여행 사진 미리보기">
-      </label>
-      <button class="primary-button" id="friendFindButton" disabled>사진을 먼저 골라 주세요</button>
+      <div class="trip-fields">
+        <label><span>어디에 다녀왔나요?</span><input id="friendDestinationInput" type="text" placeholder="예: 제주, 파리, 푸에르토리코" maxlength="40" list="destinationList"></label>
+        <label><span>언제 다녀왔나요?</span><input id="friendDateInput" type="month"></label>
+      </div>
+      <div class="upload-grid friend-upload-grid">
+        <label class="photo-slot friend-slot"><input type="file" accept="image/*" data-friend-slot="0"><span class="plus">＋</span><strong>첫 번째 장면</strong><small>Tap to add</small><img alt="첫 번째 여행 사진 미리보기"></label>
+        <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="1"><span class="plus">＋</span><strong>한 장 더</strong><small>Optional</small><img alt="두 번째 여행 사진 미리보기"></label>
+      </div>
+      <button class="primary-button" id="friendFindButton" disabled>여행지·시기·사진을 알려 주세요</button>
     </section>
 
     <section class="screen compare-screen" id="compare" data-step="3">
       <span class="eyebrow">OUR TRAVEL TASTE</span>
-      <h2 id="matchTitle">Same trip,<br>different flavor.</h2>
+      <h2 id="matchTitle">같은 여행,<br>서로 다른 맛.</h2>
       <div class="cookie-pair">
         <div><img id="compareA" alt="친구의 쿠키"><strong id="compareNameA"></strong><small>FRIEND</small></div>
         <span class="pair-mark">×</span>
@@ -171,13 +174,41 @@
         <span id="matchLabel">A DELICIOUS DIFFERENCE</span>
         <p id="matchCopy"></p>
       </article>
+      <section class="friend-result-detail">
+        <span class="eyebrow">YOUR FRIEND'S TRAVEL FLAVOR</span>
+        <h3 id="friendResultTitle"></h3>
+        <p class="flavor-note" id="friendResultTagline"></p>
+        <article class="color-recipe">
+          <span class="eyebrow">YOUR FRIEND'S PHOTO PALETTE</span><h3>사진에서 직접 읽은 색의 비율</h3>
+          <div class="color-bar" id="friendColorBar"></div><div class="color-legend" id="friendColorLegend"></div>
+        </article>
+        <article class="destination-card">
+          <header><span>DESTINATION NOTE</span><h3 id="friendDestinationTitle"></h3></header>
+          <div class="destination-facts">
+            <section><small>SCENERY</small><p id="friendScene"></p></section>
+            <section><small>YOUR WAY</small><p id="friendExperience"></p></section>
+            <section><small>LOCAL TASTE</small><p id="friendFood"></p></section>
+          </div>
+        </article>
+        <article class="travel-letter friend-letter">
+          <header><span class="eyebrow">A LETTER FROM COOKIE:RO</span><h3 id="friendLetterTitle"></h3></header>
+          <div class="letter-sections">
+            <section><span>01 · THE MOMENT</span><p id="friendPhotoStory"></p></section>
+            <section><span>02 · YOUR WAY</span><p id="friendTravelStyle"></p></section>
+            <section><span>03 · SEASON NOTE</span><p id="friendSeasonStory"></p></section>
+            <section class="food-note"><span>04 · A TASTE TO REMEMBER</span><p id="friendFoodStory"></p></section>
+          </div>
+          <p class="closing-note" id="friendClosing"></p>
+        </article>
+        <div class="friend-jar"><img id="friendFilledJar" alt="친구의 Flavor Cookie가 담긴 Cookie:Ro jar"></div>
+      </section>
       <button class="primary-button" data-go="home">나도 친구에게 보내기 <span>→</span></button>
     </section>
 
     <section class="screen flavors-screen" id="flavors" data-step="0">
       <button class="back-button" data-go="home">← Back</button>
       <span class="eyebrow">THE COOKIE:RO COLLECTION</span>
-      <h2>Five ways<br>to travel.</h2>
+      <h2>여행을 닮은<br>다섯 가지 맛.</h2>
       <img class="five-flavors" src="assets/five-flavors.png" alt="Cotton Candy, Lemon Cream, Mango Soda, Matcha Latte, Midnight Choco 쿠키 5종">
       <button class="primary-button" data-go="upload">내 Flavor 찾기 <span>→</span></button>
     </section>
@@ -186,7 +217,7 @@
   <footer><span>COOKIE:RO</span><span>FIND THE FLAVOR © 2026</span></footer>
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
-  <script src="destinations.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="destinations.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
