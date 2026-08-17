@@ -3,7 +3,7 @@ const schema={
   properties:{
     flavor:{type:'string',enum:['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco']},
     location_guess:{type:'string'},location_confidence:{type:'string',enum:['confirmed_by_user','supported_by_location','visual_guess','unknown']},
-    photo_mood:{type:'string',description:'사진 전체의 온도와 리듬을 맛처럼 표현한 짧은 구절'},specific_place_observation:{type:'string',description:'장소 사실은 한 절만 쓰고 곧바로 그곳에서 느껴지는 분위기로 이어지는 다정한 첫 문장'},capture_time_note:{type:'string',description:'정확한 날짜나 시각 없이 사진에 실제로 보이는 빛의 결을 감각적으로 표현'},visual_ingredients:{type:'array',items:{type:'string'},minItems:3,maxItems:3},scene_observation:{type:'string',description:'보이는 대상을 나열하지 말고 장면 속 대비와 리듬이 어떤 인상을 만드는지 해석'},warm_observation:{type:'string',description:'사용자가 미처 이름 붙이지 않았을 법한 사진의 작은 분위기를 근거 있게 발견'},why_this_flavor:{type:'string',description:'네 재료가 하나의 Flavor로 이어지는 핵심 요약'},recipe_base_story:{type:'string',description:'사진의 전체 정서와 구도를 고정 레시피의 정확한 베이스 이름에 연결한 감성적인 2문장'},recipe_cream_story:{type:'string',description:'사진의 중심 색과 빛을 고정 레시피의 정확한 크림 이름에 연결한 감성적인 2문장'},recipe_topping1_story:{type:'string',description:'사진의 움직임·옷차림·디테일 하나를 고정 레시피의 정확한 첫 토핑 이름에 연결한 감성적인 2문장'},recipe_topping2_story:{type:'string',description:'사진의 작은 반짝임과 여운을 고정 레시피의 정확한 두 번째 토핑 이름에 연결한 감성적인 2문장'},recipe_finish:{type:'string',description:'네 재료가 이 Flavor로 완성된 이유와 여행의 기억을 연결하는 다정한 마지막 1~2문장'},travel_style:{type:'string',description:'사람의 성격을 진단하지 않고 선택한 사진에서 드러난 여행의 호흡과 시선을 표현'},season_note:{type:'string',description:'날씨 정보를 전달하지 말고 그 계절의 공기와 빛이 사진에 남긴 감각을 표현'},local_food_question:{type:'string'},closing_message:{type:'string',description:'오늘의 맛을 다정하게 jar에 담아주는 Cookie:Ro의 짧은 마무리'}
+    photo_mood:{type:'string',description:'사진 전체의 온도와 리듬을 맛처럼 표현한 짧은 구절'},specific_place_observation:{type:'string',description:'장소 사실은 한 절만 쓰고 곧바로 그곳에서 느껴지는 분위기로 이어지는 다정한 첫 문장'},capture_time_note:{type:'string',description:'정확한 날짜나 시각 없이 사진에 실제로 보이는 빛의 결을 감각적으로 표현'},visual_ingredients:{type:'array',items:{type:'string'},minItems:3,maxItems:3},scene_observation:{type:'string',description:'보이는 대상을 나열하지 말고 장면 속 대비와 리듬이 어떤 인상을 만드는지 해석'},warm_observation:{type:'string',description:'사용자가 미처 이름 붙이지 않았을 법한 사진의 작은 분위기를 근거 있게 발견'},why_this_flavor:{type:'string',description:'네 재료가 하나의 Flavor로 이어지는 핵심 요약'},recipe_base_story:{type:'string',description:'여러 사진의 전체 정서·구도·반복되는 장면을 정확한 베이스 이름에 연결해 깊고 감성적으로 풀어낸 3~5문장'},recipe_cream_story:{type:'string',description:'여러 사진에서 반복되는 중심 색·빛·온도를 정확한 크림 이름과 질감에 연결해 깊게 풀어낸 3~5문장'},recipe_topping1_story:{type:'string',description:'움직임·옷차림·표정·디테일의 구체적인 예들을 정확한 첫 토핑의 맛과 역할에 연결한 3~5문장'},recipe_topping2_story:{type:'string',description:'작은 반짝임·색의 포인트·뒤늦게 발견되는 여운을 정확한 두 번째 토핑의 맛과 역할에 연결한 3~5문장'},recipe_finish:{type:'string',description:'사진들에 공통으로 남은 시선과 기억을 돌아보고 네 재료가 이 Flavor가 된 이유를 감정적으로 맺는 3~4문장'},travel_style:{type:'string',description:'사람의 성격을 진단하지 않고 선택한 사진에서 드러난 여행의 호흡과 시선을 표현'},season_note:{type:'string',description:'날씨 정보를 전달하지 말고 그 계절의 공기와 빛이 사진에 남긴 감각을 표현'},local_food_question:{type:'string'},closing_message:{type:'string',description:'오늘의 맛을 다정하게 jar에 담아주는 Cookie:Ro의 짧은 마무리'}
   },
   required:['flavor','location_guess','location_confidence','photo_mood','specific_place_observation','capture_time_note','visual_ingredients','scene_observation','warm_observation','why_this_flavor','recipe_base_story','recipe_cream_story','recipe_topping1_story','recipe_topping2_story','recipe_finish','travel_style','season_note','local_food_question','closing_message']
 };
@@ -75,6 +75,7 @@ function keepTheMagic(value){
   if(typeof value!=='string')return value;
   const forbidden=/(?:EXIF|GPS|메타데이터|위치\s*데이터|좌표|위도|경도|촬영\s*(?:정보|시각|시간|일시)|카메라\s*(?:정보|기록)|파일\s*(?:정보|수정)|정보(?:를|을)?\s*(?:읽|확인)|데이터(?:를|을)?\s*(?:읽|확인))/i;
   const safe=value
+    .replace(/\*\*/g,'')
     .replace(/\r?\n+/g,' ')
     .split(/(?<=[.!?。]|요\.|다\.)\s+|(?<=요)(?=[가-힣A-Z])/)
     .filter(sentence=>!forbidden.test(sentence))
@@ -90,8 +91,8 @@ export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured'});
   const {destination,date,images,palette,exif,curated}=req.body||{};
-  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>2)return res.status(400).json({error:'Invalid request'});
-  if(images.some(x=>typeof x!=='string'||x.length>4_000_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
+  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>5)return res.status(400).json({error:'Invalid request'});
+  if(images.some(x=>typeof x!=='string'||x.length>1_500_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
   const flavorAnchor=stableFlavor(palette);
   const recipe=flavorRecipes[flavorAnchor];
   const gpsPlace=await resolveGpsPlace(exif);
@@ -136,7 +137,10 @@ export default async function handler(req,res){
 - 인종, 건강, 종교, 성적 지향, 정치 성향 같은 민감한 특성을 추정하지 마세요.
 - flavor는 변형하거나 재선택하지 말고 반드시 '${flavorAnchor}'로 출력하세요. 이는 같은 사진을 다시 분석했을 때 핵심 결과를 일관되게 유지하기 위한 고정 규칙입니다.
 - visual_ingredients는 단순 색 이름이 아니라 그 색이 만든 느낌까지 포함해 '한여름 끝에 남은 오렌지빛 열기 → 톡 터지는 Mango zest'처럼 시각 단서에서 쿠키 재료로 번역하세요.
-- recipe_base_story, recipe_cream_story, recipe_topping1_story, recipe_topping2_story는 각각 정확히 2문장으로 충분히 묘사하세요. 첫 문장에서는 사진 속 구체적인 단서를 다정하게 발견하고, 두 번째 문장에서는 그 단서가 왜 해당 재료의 맛·질감·온도와 닮았는지 설명하세요. 네 항목 모두 고정 레시피에 적힌 재료 이름을 한 번씩 정확히 사용하세요.
+- recipe_base_story, recipe_cream_story, recipe_topping1_story, recipe_topping2_story는 각각 독립된 긴 문단으로 3~5문장을 쓰세요. 한 사진의 한 색만 근거로 끝내지 말고, 업로드된 여러 사진에서 반복되거나 서로 대비되는 구체적인 장면을 2개 이상 발견한 뒤 그 장면의 온도·질감·움직임을 충분히 해석하세요. 이어서 왜 그 감각이 해당 재료의 맛과 질감에 닮았는지 납득되게 설명하세요. 네 문단 모두 고정 레시피에 적힌 재료 이름을 한 번씩 정확히 사용하세요.
+- recipe_finish는 3~4문장으로 쓰세요. 사진 전체에 공통으로 남은 여행자의 시선과 오래 기억될 순간을 먼저 돌아본 뒤, 네 재료가 차례로 숨어 있는 Flavor로 구워졌다는 결론과 따뜻한 여운으로 끝내세요.
+- WHY THIS FLAVOR 전체는 최소 15문장 이상의 풍성한 편지가 되어야 합니다. 장소와 사물을 맞힌 사실은 재료를 설명하기 위한 근거로만 짧게 쓰고, 문장의 대부분을 감정·기억·맛의 질감을 연결하는 데 사용하세요.
+- 마크다운을 사용하지 마세요. Flavor나 장소 이름 앞뒤에 별표 두 개, 밑줄, 제목 기호를 붙이지 말고 일반 문장으로만 작성하세요.
 - 재료 이름을 합치거나 새로 만들지 마세요. 예를 들어 Lemon Cream의 '레몬 크림'과 '레몬 제스트'를 '레몬 제스트 글레이즈'로 바꾸면 안 됩니다. 베이스·크림·첫 토핑·두 번째 토핑은 반드시 서로 독립된 네 재료여야 합니다.
 - why_this_flavor는 장소 사실이 아니라 네 재료가 이 Flavor로 이어지는 이유를 1~2문장으로 요약하세요. recipe_finish는 '아마 시간이 조금 더 흐른 뒤 이 사진을 다시 본다면…'처럼 여행의 기억을 다시 열어주는 다정한 1~2문장으로 마무리하세요.
 - closing_message는 결과 요약을 반복하지 말고 '오늘의 반짝임은 바삭한 가장자리까지 잘 구워서 jar에 담아둘게요.'처럼 Cookie:Ro가 직접 쿠키를 건네는 말로 끝내세요.
