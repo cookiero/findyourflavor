@@ -101,10 +101,14 @@
         <span class="halo"></span>
         <img id="resultCookie" src="assets/mango-soda.png" alt="Mango Soda Cookie">
       </div>
-      <article class="reason-card">
-        <span>WHY THIS FLAVOR?</span>
-        <p id="resultReason">밝은 색과 탁 트인 장면이 많아요. 계획보다는 그날의 기분을 따라 움직이고, 작은 순간도 축제로 만드는 여행자예요.</p>
-        <div class="trait-row" id="traitRow"></div>
+      <section class="journey-photos" aria-labelledby="journeyPhotosTitle">
+        <span class="eyebrow">THE MOMENTS YOU BROUGHT</span><h3 id="journeyPhotosTitle">이 사진들로 구웠어요.</h3>
+        <div class="result-photo-strip" id="resultPhotos"></div>
+      </section>
+      <article class="recipe-story" id="resultRecipe">
+        <header><span class="eyebrow">YOUR TRIP, BAKED.</span><h3>여행이 네 가지 재료가 되는 순간</h3></header>
+        <div class="recipe-sections" id="recipeSections"></div>
+        <footer><span>A TASTE OF YOUR JOURNEY</span><p id="finalBake"></p></footer>
       </article>
       <article class="destination-card">
         <header><span id="destinationKicker">DESTINATION NOTE</span><h3 id="destinationTitle">로스앤젤레스에서 보낸 시간</h3></header>
@@ -142,10 +146,11 @@
       <div class="share-card">
         <span class="eyebrow">TASTE IT TOGETHER</span>
         <h3>우리 여행,<br>같은 맛일까?</h3>
-        <p>친구에게 링크를 보내고 두 사람의 Flavor를 비교해 보세요.</p>
+        <p>친구에게 링크를 보내고 두 사람의 Flavor를 비교해 보세요.<br><small>사진은 공유되지 않고 완성된 쿠키 설명만 전달돼요.</small></p>
         <button class="primary-button" id="shareButton">친구에게 Flavor 보내기 <span>↗</span></button>
         <p class="share-status" id="shareStatus" aria-live="polite"></p>
       </div>
+      <section class="waitlist-card" data-waitlist aria-label="Cookie:Ro Bakery 대기등록"></section>
     </section>
 
     <section class="screen" id="friend" data-step="1">
@@ -154,6 +159,10 @@
         <img id="friendCookie" src="assets/mango-soda.png" alt="친구의 Flavor Cookie">
         <p><strong id="friendFlavor">Mango Soda</strong> 맛 친구가<br>함께 비교해 보고 싶대요.</p>
       </div>
+      <section class="shared-story" id="sharedStory" hidden>
+        <span class="eyebrow">YOUR FRIEND'S FLAVOR RECIPE</span>
+        <article class="recipe-story compact-recipe"><div class="recipe-sections" id="sharedRecipeSections"></div><footer><span>A TASTE OF YOUR JOURNEY</span><p id="sharedFinalBake"></p></footer></article>
+      </section>
       <div class="section-heading compact">
         <h2>내 여행은<br>어떤 맛일까?</h2>
         <p>여행 정보와 사진을 골라 두 사람의 케미를 확인해요.</p>
@@ -186,6 +195,8 @@
         <span class="eyebrow">YOUR FRIEND'S TRAVEL FLAVOR</span>
         <h3 id="friendResultTitle"></h3>
         <p class="flavor-note" id="friendResultTagline"></p>
+        <div class="result-photo-strip" id="friendResultPhotos"></div>
+        <article class="recipe-story compact-recipe"><div class="recipe-sections" id="friendRecipeSections"></div><footer><span>A TASTE OF YOUR JOURNEY</span><p id="friendFinalBake"></p></footer></article>
         <article class="color-recipe">
           <span class="eyebrow">YOUR FRIEND'S PHOTO PALETTE</span><h3>사진에서 직접 읽은 색의 비율</h3>
           <div class="color-bar" id="friendColorBar"></div><div class="color-legend" id="friendColorLegend"></div>
@@ -210,6 +221,7 @@
         </article>
         <div class="friend-jar"><img id="friendFilledJar" alt="친구의 Flavor Cookie가 담긴 Cookie:Ro jar"></div>
       </section>
+      <section class="waitlist-card" data-waitlist aria-label="Cookie:Ro Bakery 대기등록"></section>
       <button class="primary-button" data-go="home">나도 친구에게 보내기 <span>→</span></button>
     </section>
 
@@ -226,6 +238,6 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
   <script src="destinations.js?v=7"></script>
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

@@ -4,8 +4,9 @@
 
 1. Vercel 계정을 만들고 현재 사이트 폴더를 새 프로젝트로 가져옵니다.
 2. 프로젝트의 **Settings → Environment Variables**에서 `OPENAI_API_KEY`를 추가합니다.
-3. Production으로 다시 배포합니다.
-4. 먼저 Vercel이 제공하는 `*.vercel.app` 주소에서 사진 분석이 작동하는지 확인합니다.
+3. 대기명단을 받을 Google Sheets를 만든 뒤 `GOOGLE_SHEETS_WAITLIST_SETUP.md`의 순서대로 연결하고, Apps Script 웹 앱 주소를 `GOOGLE_SHEETS_WEBHOOK_URL` 환경 변수로 추가합니다.
+4. Production으로 다시 배포합니다.
+5. 먼저 Vercel이 제공하는 `*.vercel.app` 주소에서 사진 분석, 새 공유 링크와 대기등록이 모두 작동하는지 확인합니다. 공유 링크에는 사진이 아닌 Flavor 설명만 포함됩니다.
 
 ## 2. Vercel에 도메인 등록하기
 
