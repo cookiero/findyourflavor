@@ -90,14 +90,21 @@ async function fingerprint(file){
 function colorName([r,g,b]){const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,v=max/255,s=max?d/max:0;let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h=(h*60+360)%360}if(v<.2)return'깊은 먹빛';if(v>.9&&s<.12)return'맑은 크림빛';if(s<.16)return v>.68?'포근한 회백빛':'차분한 회갈빛';if(h<15||h>=345)return v>.72?'코랄 레드':'딥 레드';if(h<45)return v>.78?'햇살 오렌지':'따뜻한 브라운';if(h<70)return'골든 옐로';if(h<165)return s<.42?'세이지 그린':'싱그러운 그린';if(h<205)return'민트 블루';if(h<255)return v>.7?'하늘 블루':'딥 오션 블루';if(h<290)return'라벤더 퍼플';if(h<345)return'로지 핑크';return'여행의 색'}
 async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,180/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,out=[];for(let i=0;i<d.length;i+=16){if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
 async function analyzePhotoColors(files){let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>12000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/12000)===0);const picks=[.08,.34,.62,.9].map(q=>pixels[Math.min(pixels.length-1,Math.floor(pixels.length*q))].slice());let groups=[];for(let step=0;step<9;step++){groups=picks.map(()=>({sum:[0,0,0],n:0}));for(const p of pixels){let bi=0,bd=Infinity;picks.forEach((c,i)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(d<bd){bd=d;bi=i}});const g=groups[bi];g.sum[0]+=p[0];g.sum[1]+=p[1];g.sum[2]+=p[2];g.n++}groups.forEach((g,i)=>{if(g.n)picks[i]=g.sum.map(v=>Math.round(v/g.n))})}const total=groups.reduce((s,g)=>s+g.n,0);let result=groups.map((g,i)=>({rgb:picks[i],raw:g.n/total*100})).filter(x=>x.raw>.15).sort((a,b)=>b.raw-a.raw);const floors=result.map(x=>Math.floor(x.raw));let remaining=100-floors.reduce((a,b)=>a+b,0);for(let i=0;i<remaining;i++)floors[i%floors.length]++;return result.map((x,i)=>{const hex='#'+x.rgb.map(v=>v.toString(16).padStart(2,'0')).join('');return[colorName(x.rgb),hex,floors[i]]})}
+function deterministicFlavor(palette,hash){
+  if(!palette?.length)return flavors[hash%flavors.length];
+  const scores=[0,0,0,0,0];
+  palette.forEach(([,hex,percent])=>{const rgb=[1,3,5].map(index=>parseInt(hex.slice(index,index+2),16)/255),max=Math.max(...rgb),min=Math.min(...rgb),delta=max-min,s=max?delta/max:0,v=max;let h=0;if(delta){if(max===rgb[0])h=((rgb[1]-rgb[2])/delta)%6;else if(max===rgb[1])h=(rgb[2]-rgb[0])/delta+2;else h=(rgb[0]-rgb[1])/delta+4;h=(h*60+360)%360}const w=percent/100,pink=h>=315||h<10?1:0,yellow=h>=42&&h<75?1:0,orange=h>=10&&h<42?1:0,green=h>=75&&h<165?1:0,blue=h>=165&&h<265?1:0;scores[0]+=w*(1.1*pink+.55*blue+.5*v+.25*(1-s));scores[1]+=w*(1.2*yellow+.8*v+.35*(1-s));scores[2]+=w*(1.25*orange+.75*yellow+.65*s+.3*v);scores[3]+=w*(1.5*green+.55*(1-s)+.25*(1-v));scores[4]+=w*(1.65*(1-v)+.5*s+.35*blue)});
+  scores.forEach((_,index)=>scores[index]+=((hash>>>(index*5))&31)/3100);
+  return flavors[scores.indexOf(Math.max(...scores))];
+}
 async function imageForAi(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,960/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.68))};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('사진을 읽지 못했어요.'))};img.src=url})}
 async function readPhotoExif(file){const fallback={file_name:file.name,file_modified:new Date(file.lastModified).toISOString()};if(!window.exifr)return fallback;try{const data=await window.exifr.parse(file,{tiff:true,exif:true,gps:true});return{...fallback,taken_at:data?.DateTimeOriginal||data?.CreateDate||null,latitude:Number.isFinite(data?.latitude)?data.latitude:null,longitude:Number.isFinite(data?.longitude)?data.longitude:null,camera:[data?.Make,data?.Model].filter(Boolean).join(' ')||null}}catch{return fallback}}
 async function requestAiAnalysis(files,context){
   if(location.protocol==='file:')return null;
-  const {destination,date,palette,exif}=context,place=findPlace(destination);
+  const {destination,date,palette,exif,selectedFlavor}=context,place=findPlace(destination);
   const images=await Promise.all(files.map(imageForAi));
   const curated=place?{name:place.name,climate:place.climate,scene:place.scene,food:place.food,foodQuestion:place.foodQuestion,experience:place.experience,source:place.source}:null;
-  const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated})});
+  const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({destination,date,images,palette,exif,curated,selectedFlavor})});
   if(!response.ok)throw new Error('AI server unavailable');
   return (await response.json()).analysis;
 }
@@ -179,18 +186,16 @@ function renderTripLetter(flavor){
 }
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='여행을 쿠키로 굽는 중<span class="loading-dots"></span>';const stopBaking=startBaking(),minimum=pause(4300);
-  if(!fromFriend){const selected=photos.filter(Boolean);try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}try{aiInsight=await requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif})}catch{aiInsight=null}}
-  const hash=await fingerprint(file); let flavor=flavors[hash%flavors.length];
-  if(!fromFriend&&aiInsight)flavor=flavors.find(f=>f.name===aiInsight.flavor)||flavor;
-  if(fromFriend&&friendBase&&flavor.id===friendBase.id&&hash%3!==0) flavor=flavors[(flavors.indexOf(flavor)+1)%flavors.length];
+  const selected=photos.filter(Boolean),hash=await fingerprint(file);let flavor=flavors[hash%flavors.length];
+  if(!fromFriend){try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}flavor=deterministicFlavor(photoPalette,hash);try{aiInsight=await requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif,selectedFlavor:flavor.name})}catch{aiInsight=null}}
   await minimum;stopBaking();await finishBaking(flavor,()=>{if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result')}});
 }
 document.getElementById('findButton').addEventListener('click',()=>{prepareBakingAudio();beginFinding(photos[0])});
 async function beginFriendFinding(){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
-  try{friendAi=await requestAiAnalysis(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif})}catch{friendAi=null}
-  const hash=await fingerprint(selected[0]);let flavor=friendAi?flavors.find(f=>f.name===friendAi.flavor):flavors[hash%flavors.length];if(!flavor)flavor=flavors[hash%flavors.length];
+  const hash=await fingerprint(selected[0]),flavor=deterministicFlavor(friendPalette,hash);
+  try{friendAi=await requestAiAnalysis(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif,selectedFlavor:flavor.name})}catch{friendAi=null}
   await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor)});
 }
 document.getElementById('friendFindButton').addEventListener('click',()=>{prepareBakingAudio();beginFriendFinding()});

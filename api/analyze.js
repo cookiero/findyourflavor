@@ -12,8 +12,9 @@ const schema={
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured'});
-  const {destination,date,images,palette,exif,curated}=req.body||{};
-  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
+  const {destination,date,images,palette,exif,curated,selectedFlavor}=req.body||{};
+  const allowedFlavors=['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco'];
+  if(!destination||!date||!allowedFlavors.includes(selectedFlavor)||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
   if(images.some(x=>typeof x!=='string'||x.length>4_000_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
   const prompt=`당신은 Cookie:Ro의 따뜻하고 세심한 여행 사진 큐레이터입니다. 사용자 입력과 사진을 함께 분석해 한국어로 답하세요.
 
@@ -22,6 +23,7 @@ export default async function handler(req,res){
 사진 EXIF(없을 수 있음): ${JSON.stringify(exif||{})}
 브라우저가 실제 픽셀로 계산한 색상 비율: ${JSON.stringify(palette||[])}
 검수된 여행지 정보(있을 수 있음): ${JSON.stringify(curated||{})}
+사진 색상 점수표로 이미 확정된 Flavor: ${selectedFlavor}
 
 규칙:
 - 사진에서 실제로 보이는 장면, 빛, 구도, 활동만 근거로 쓰고 보이지 않는 사실은 꾸며내지 마세요.
@@ -32,7 +34,7 @@ export default async function handler(req,res){
 - local_food_question은 그 지역의 구체적인 대표 음식 이름을 넣어 사람에게 다정하게 묻는 한두 문장이어야 합니다.
 - 사진 픽셀 색상 비율은 이미 계산되었으므로 새 비율을 추측하지 마세요.
 - 인종, 건강, 종교, 성적 지향, 정치 성향 같은 민감한 특성을 추정하지 마세요.
-- 다섯 Flavor 중 사진과 여행의 분위기에 가장 잘 맞는 하나를 고르세요.
+- Flavor는 이미 사진 픽셀의 고정 점수표로 ${selectedFlavor}로 확정되었습니다. 다른 Flavor를 고르거나 제안하지 말고 flavor 필드에도 반드시 정확히 ${selectedFlavor}를 쓰세요. 이후 모든 재료 분석은 이 Flavor의 고정 레시피만 사용하세요.
 - 사용자에게 보여주는 글에는 AI, 분석, EXIF, GPS, 좌표, 메타데이터 같은 기술 용어나 정보 출처를 쓰지 마세요.
   - base_analysis, cream_analysis, cube_analysis, topping_analysis가 결과의 핵심입니다. 절대로 짧은 요약으로 쓰지 마세요. 각 필드는 공백 포함 220~700자, 4~6개의 자연스러운 한국어 문장으로 작성하세요.
   - 각 필드마다 반드시 ① 어느 사진에서 무엇이 보였는지 알 수 있을 정도의 구체적인 시각 근거 2개 이상 ② 그 빛·색·질감·구도·움직임에서 받은 느낌과 여행 방식에 대한 해석 ③ 왜 다른 재료가 아니라 해당 재료의 맛·색·질감과 연결했는지를 충분히 설명하세요.
@@ -52,6 +54,7 @@ export default async function handler(req,res){
     if(!response.ok)return res.status(response.status).json({error:'AI analysis failed',detail:data?.error?.message||'Unknown error'});
     const text=data.output?.flatMap(x=>x.content||[]).find(x=>x.type==='output_text')?.text;
     if(!text)throw new Error('No structured output');
-    return res.status(200).json({analysis:JSON.parse(text)});
+    const analysis=JSON.parse(text);analysis.flavor=selectedFlavor;
+    return res.status(200).json({analysis});
   }catch(error){return res.status(500).json({error:'Analysis unavailable',detail:error.message});}
 }
