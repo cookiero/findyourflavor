@@ -120,22 +120,24 @@ function renderResult(flavor){
   renderTripLetter(flavor);
 }
 
-function fallbackRecipe(flavor){
+function fallbackRecipe(flavor,context={}){
+  const parts=recipes[flavor.id],palette=(context.palette||flavor.colors).slice(0,3).map(color=>color[0]).join(', '),destination=context.destination||'그곳';
   return{
-    base_analysis:`사진을 감싼 빛과 공기의 온도가 ${flavor.tagline}을 닮아 있어요. 여행 전체의 첫인상을 단단히 받쳐 주는 온도라서 이 쿠키의 베이스로 담았어요.`,
-    cream_analysis:`사진에서 반복되는 색과 부드러운 여백이 장면들을 자연스럽게 이어 줘요. 서로 다른 풍경을 한 가지 기분으로 감싸는 크림 같은 색이에요.`,
-    cube_analysis:`유독 또렷하게 시선이 머무는 작은 장면들이 보여요. 나중에도 한 조각씩 꺼내 보고 싶은 기억이라서 선명한 재료로 넣었어요.`,
-    topping_analysis:`사진마다 시선이 움직이고 멈추는 속도에서 이 여행만의 리듬이 느껴져요. 하루의 방향을 바꾼 순간들을 마지막 토핑으로 흩뿌렸어요.`,
-    final_bake:`사진 속 빛과 색, 오래 남은 장면과 움직임이 한 쿠키 안에서 산뜻하게 겹쳐요. 이 여행의 맛은 ${flavor.name}예요.`
+    base_analysis:`${destination}에서 가져온 사진 전체를 감싼 빛과 공기의 온도는 ${flavor.tagline}이라는 첫인상을 만들어요. 장면마다 명암과 여백의 크기는 조금씩 다르지만, 사진을 차례로 넘길수록 같은 온도의 하루를 여러 방향에서 바라본 듯한 흐름이 이어져요. 그래서 단순히 밝거나 어둡다는 이유가 아니라, 여행의 첫 장면부터 마지막 장면까지 기분을 단단하게 받쳐 주는 힘을 ${parts[0][3]}에 담았어요. 쿠키의 베이스가 모든 재료를 품고 굽는 동안 맛의 중심을 잡아 주듯, 사진을 고른 시선에서 느껴지는 여행의 태도가 이 레시피의 첫맛이 되었어요.`,
+    cream_analysis:`사진에서 실제로 읽힌 중심 색은 ${palette}이고, 이 색들이 서로 다른 풍경을 한 가지 기억으로 부드럽게 이어 주고 있어요. 강한 색이 눈에 들어오는 부분과 조용한 여백이 남은 부분이 번갈아 나타나면서, 여행에는 선명함과 편안함이 함께 머물렀던 것처럼 느껴져요. 이 대비를 단순한 색 조합으로 두지 않고, 장면 사이를 천천히 녹아 연결하는 ${parts[1][3]}의 질감으로 옮겼어요. 한입 안에서 베이스의 온도를 감싸고 다음 재료로 자연스럽게 이어 주는 크림처럼, 사진의 색도 여행의 여러 순간을 하나의 분위기로 묶어 주고 있기 때문이에요.`,
+    cube_analysis:`사진들 가운데 유독 대비가 또렷하거나 시선이 오래 머무는 작은 부분들은 여행 전체를 대표하기보다 나중에 한 조각씩 다시 떠올리게 될 기억에 가까워요. 넓은 풍경 속의 작은 색, 화면 한쪽에 남은 빛, 가까이 들여다본 디테일처럼 전체 분위기 안에서 선명하게 튀어나오는 순간들이 있어요. 그런 장면은 여행을 돌아볼 때 가장 먼저 설명하는 이야기는 아니어도, 시간이 지난 뒤 갑자기 생생하게 돌아오는 기억이 되곤 해요. 그래서 오래 씹을수록 존재감이 드러나는 ${parts[2][3]}로 넣어, 부드러운 베이스와 크림 사이에 이 여행만의 구체적인 표정을 남겼어요.`,
+    topping_analysis:`사진을 차례로 보면 넓게 바라보다가 작은 장면에 멈추고, 다시 다른 풍경으로 움직이는 시선의 속도가 느껴져요. 모든 순간을 같은 무게로 담기보다 마음이 향하는 곳에서 잠시 멈춘 흔적이 있어, 이 여행은 계획표보다 발견의 리듬으로 기억되는 하루처럼 보여요. 그 움직임을 큰 재료로 덮기보다는 쿠키의 마지막 인상을 깨우는 ${parts[3][3]}으로 흩뿌렸어요. 한입의 끝에서 예상하지 못한 질감과 여운을 남기는 토핑처럼, 사진 사이의 멈춤과 전환이 여행의 방향을 또렷하게 기억하게 해 주기 때문이에요.`,
+    final_bake:`${destination}의 빛과 공기는 ${parts[0][3]}의 온도가 되고, 반복된 색은 ${parts[1][3]}처럼 서로 다른 장면을 부드럽게 이어 줬어요. 오래 남을 작은 기억은 ${parts[2][3]}로, 사진 사이를 움직인 시선의 리듬은 ${parts[3][3]}으로 더해졌어요. 그렇게 한 장면의 인상이 아니라 여행 전체의 온도와 색, 기억과 움직임을 차례로 구워 완성한 이 여행의 맛은 ${flavor.name}예요.`
   };
 }
 function renderRecipe(sectionId,finalId,flavor,analysis){
   const holder=document.getElementById(sectionId),final=document.getElementById(finalId);if(!holder||!final)return;
-  const copy={...fallbackRecipe(flavor),...(analysis||{})},fields=['base_analysis','cream_analysis','cube_analysis','topping_analysis'];holder.replaceChildren();
+  const friendResult=sectionId==='friendRecipeSections',context={palette:friendResult?friendPalette:photoPalette,destination:document.getElementById(friendResult?'friendDestinationInput':'destinationInput')?.value.trim()};
+  const copy={...fallbackRecipe(flavor,context),...(analysis||{})},fields=['base_analysis','cream_analysis','cube_analysis','topping_analysis'];holder.replaceChildren();
   recipes[flavor.id].forEach((part,index)=>{const row=document.createElement('section');row.className='recipe-part';const icon=document.createElement('span');icon.className='recipe-icon';icon.textContent=part[2];const body=document.createElement('div');body.className='recipe-copy';const small=document.createElement('small');small.textContent=`${part[0]} — ${part[1]}`;const title=document.createElement('h4');title.textContent=part[3];const p=document.createElement('p');p.textContent=copy[fields[index]];body.append(small,title,p);row.append(icon,body);holder.append(row)});final.textContent=copy.final_bake;
 }
 function renderPhotos(id,sources){const holder=document.getElementById(id);if(!holder)return;holder.replaceChildren();sources.forEach((source,index)=>{const url=source instanceof File?URL.createObjectURL(source):source;if(!url)return;const figure=document.createElement('figure');figure.style.setProperty('--tilt',`${index%2?1.2:-.8}deg`);const img=document.createElement('img');img.src=url;img.alt=`Flavor를 만든 여행 사진 ${index+1}`;const caption=document.createElement('figcaption');caption.textContent=`MOMENT 0${index+1}`;figure.append(img,caption);holder.append(figure)})}
-function shareAnalysis(flavor,analysis){const copy={...fallbackRecipe(flavor),...(analysis||{})};return{base_analysis:copy.base_analysis,cream_analysis:copy.cream_analysis,cube_analysis:copy.cube_analysis,topping_analysis:copy.topping_analysis,final_bake:copy.final_bake}}
+function shareAnalysis(flavor,analysis){const context={palette:photoPalette,destination:document.getElementById('destinationInput')?.value.trim()},copy={...fallbackRecipe(flavor,context),...(analysis||{})};return{base_analysis:copy.base_analysis,cream_analysis:copy.cream_analysis,cube_analysis:copy.cube_analysis,topping_analysis:copy.topping_analysis,final_bake:copy.final_bake}}
 function encodeShare(payload){const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';bytes.forEach(byte=>binary+=String.fromCharCode(byte));return btoa(binary).replaceAll('+','-').replaceAll('/','_').replaceAll('=','')}
 function decodeShare(value){const base64=value.replaceAll('-','+').replaceAll('_','/').padEnd(Math.ceil(value.length/4)*4,'=');const binary=atob(base64),bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}
 function renderTripLetter(flavor){

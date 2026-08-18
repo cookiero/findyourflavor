@@ -3,9 +3,10 @@ const schema={
   properties:{
     flavor:{type:'string',enum:['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco']},
     location_guess:{type:'string'},location_confidence:{type:'string',enum:['confirmed_by_user','supported_by_exif','visual_guess','unknown']},
-    photo_mood:{type:'string'},scene_observation:{type:'string'},warm_observation:{type:'string'},why_this_flavor:{type:'string'},travel_style:{type:'string'},season_note:{type:'string'},local_food_question:{type:'string'},closing_message:{type:'string'}
+    photo_mood:{type:'string'},scene_observation:{type:'string'},warm_observation:{type:'string'},why_this_flavor:{type:'string'},travel_style:{type:'string'},season_note:{type:'string'},local_food_question:{type:'string'},closing_message:{type:'string'},
+    base_analysis:{type:'string'},cream_analysis:{type:'string'},cube_analysis:{type:'string'},topping_analysis:{type:'string'},final_bake:{type:'string'}
   },
-  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message']
+  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message','base_analysis','cream_analysis','cube_analysis','topping_analysis','final_bake']
 };
 
 export default async function handler(req,res){
@@ -33,10 +34,17 @@ export default async function handler(req,res){
 - 인종, 건강, 종교, 성적 지향, 정치 성향 같은 민감한 특성을 추정하지 마세요.
 - 다섯 Flavor 중 사진과 여행의 분위기에 가장 잘 맞는 하나를 고르세요.
 - 사용자에게 보여주는 글에는 AI, 분석, EXIF, GPS, 좌표, 메타데이터 같은 기술 용어나 정보 출처를 쓰지 마세요.
-- why_this_flavor는 결과의 핵심입니다. 사진 여러 장을 관통하는 감정과 실제 장면을 충분히 짚은 뒤, 선택한 Flavor의 베이스·크림·첫 토핑·두 번째 토핑을 각각 별도의 긴 문단으로 설명하고 마지막에 여행의 기억을 다정하게 맺으세요. 사실 나열보다 장면의 온도·질감·움직임이 왜 그 재료와 닮았는지를 깊게 설명하세요.
+  - base_analysis, cream_analysis, cube_analysis, topping_analysis가 결과의 핵심입니다. 절대로 짧은 요약으로 쓰지 마세요. 각 필드는 공백 포함 220~700자, 4~6개의 자연스러운 한국어 문장으로 작성하세요.
+  - 각 필드마다 반드시 ① 어느 사진에서 무엇이 보였는지 알 수 있을 정도의 구체적인 시각 근거 2개 이상 ② 그 빛·색·질감·구도·움직임에서 받은 느낌과 여행 방식에 대한 해석 ③ 왜 다른 재료가 아니라 해당 재료의 맛·색·질감과 연결했는지를 충분히 설명하세요.
+  - “밝아서 레몬”, “어두워서 초콜릿”처럼 단순하게 연결하지 마세요. 예를 들어 어두운 사진이라면 젖은 바닥의 반사, 건물 재질, 창문의 불빛, 인물의 움직임처럼 서로 다른 근거가 어떻게 코코아의 쌉싸름함이나 가나슈의 온기로 번역되는지 설명하세요.
+  - 사진이 여러 장이면 한 장만 설명하지 말고 서로 다른 사진에서 반복되는 요소와 대비되는 요소를 함께 읽으세요. 단, 사진에 실제로 없는 사물·옷차림·표정·날씨·행동은 절대 만들지 마세요.
+  - base_analysis는 여행 전체를 감싼 온도와 첫인상을 베이스의 굽기·묵직함·산뜻함으로, cream_analysis는 반복되는 색과 장면 사이의 온도 대비를 크림의 질감으로, cube_analysis는 유독 또렷하게 남은 구체적인 순간을 작은 맛의 포인트로, topping_analysis는 사진 사이에서 움직이고 멈추는 여행의 리듬과 마지막 여운으로 해석하세요. 같은 근거나 색을 네 필드에서 반복하지 마세요.
+  - 모든 문장은 “사진을 설명했다”에서 끝나지 않고 “Cookie:Ro가 여행을 쿠키 레시피로 번역했다”는 인상을 주어야 합니다. 다정하지만 상투적이지 않고, 사용자가 자기 사진을 세심히 들여다봤다고 느낄 만큼 구체적으로 쓰세요.
+  - final_bake는 앞의 네 분석만 압축해 여행 전체를 기억하게 만드는 3~4문장의 총정리입니다. 새로운 관찰은 추가하지 말고 베이스·크림·기억의 조각·토핑이 한 쿠키로 완성되는 흐름을 자연스럽게 엮으세요. 마지막 문장은 반드시 “이 여행의 맛은 [선택한 Flavor]예요.”로 끝내세요.
+  - why_this_flavor는 이전 화면과의 호환성을 위한 2문장 이내의 짧은 요약으로만 작성하세요.
 - Flavor별 고정 레시피는 다음과 같습니다. Lemon Cream: 버터 쿠키 베이스, 레몬 크림, 레몬 제스트, 슈가 크럼. Mango Soda: 망고 쿠키 베이스, 소다 크림, 망고 큐브, 팝핑 캔디. Cotton Candy: 바닐라 쿠키 베이스, 솜사탕 크림, 핑크 슈가, 별 스프링클. Midnight Choco: 다크 코코아 쿠키 베이스, 초콜릿 가나슈, 베리 크럼, 솔트 크리스털. Matcha Latte: 말차 쿠키 베이스, 밀크 크림, 피스타치오 크럼, 잎사귀 슈가.
 - 재료 이름을 합치거나 새로 만들지 말고 선택한 Flavor의 네 재료를 정확히 사용하세요. 같은 색 하나를 네 재료의 이유로 반복하지 말고, 사진에 없는 표정·옷차림·행동은 꾸며내지 마세요.
-- 마크다운과 별표를 쓰지 말고, 빈 줄로 문단을 나눈 따뜻한 한국어 편지로 작성하세요.`;
+  - 마크다운, 제목, 번호, 별표를 필드 값에 쓰지 말고 따뜻하고 구체적인 한국어 분석문으로 작성하세요.`;
   const content=[{type:'input_text',text:prompt},...images.map(image_url=>({type:'input_image',image_url,detail:'auto'}))];
   try{
     const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,input:[{role:'user',content}],tools:[{type:'web_search'}],text:{format:{type:'json_schema',name:'cookiero_travel_analysis',strict:true,schema}}})});
