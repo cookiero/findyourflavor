@@ -1,12 +1,20 @@
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
-  if(!process.env.GOOGLE_SHEETS_WEBHOOK_URL)return res.status(503).json({error:'Waitlist is not configured'});
+  const rawWebhook=String(process.env.GOOGLE_SHEETS_WEBHOOK_URL||'').trim();
+  if(!rawWebhook)return res.status(503).json({error:'NOT_CONFIGURED',message:'대기명단 연결 주소가 아직 설정되지 않았어요.'});
   const {name,contact,website='',source='result'}=req.body||{};
   if(website)return res.status(200).json({ok:true});
   if(typeof name!=='string'||name.trim().length<1||name.trim().length>40||typeof contact!=='string'||contact.trim().length<2||contact.trim().length>120)return res.status(400).json({error:'Invalid waitlist entry'});
   try{
-    const response=await fetch(process.env.GOOGLE_SHEETS_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim(),contact:contact.trim(),source:String(source).slice(0,30),createdAt:new Date().toISOString()}),redirect:'follow'});
-    if(!response.ok)throw new Error('Sheet request failed');
+    const fullUrl=rawWebhook.match(/https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/(?:exec|dev)/)?.[0];
+    const deploymentId=!fullUrl&&/^[A-Za-z0-9_-]{30,}$/.test(rawWebhook.replace(/^['"]|['"]$/g,''))?rawWebhook.replace(/^['"]|['"]$/g,''):null;
+    const webhook=(fullUrl||deploymentId&&`https://script.google.com/macros/s/${deploymentId}/exec`)?.replace(/\/dev$/,'/exec');
+    if(!webhook)return res.status(500).json({error:'INVALID_WEBHOOK',message:'Google Sheets 연결 주소 형식이 올바르지 않아요.'});
+    const response=await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim(),contact:contact.trim(),source:String(source).slice(0,30),createdAt:new Date().toISOString()}),redirect:'follow'});
+    const responseText=await response.text();
+    if(!response.ok){console.error('Waitlist Google status',response.status);return res.status(502).json({error:'GOOGLE_DENIED',message:'Google Apps Script의 액세스 권한을 모든 사용자로 확인해 주세요.'})}
+    let sheetResult;try{sheetResult=JSON.parse(responseText)}catch{sheetResult=null}
+    if(!sheetResult?.ok){console.error('Waitlist script returned an invalid response');return res.status(502).json({error:'SHEET_SCRIPT_ERROR',message:'Google Sheets 스크립트 실행에 실패했어요. waitlist 탭 이름과 배포 코드를 확인해 주세요.'})}
     return res.status(200).json({ok:true});
-  }catch{return res.status(502).json({error:'Waitlist unavailable'});}
+  }catch(error){console.error('Waitlist connection error',error?.message||'unknown');return res.status(502).json({error:'CONNECTION_ERROR',message:'Google Sheets에 연결하지 못했어요. 웹 앱 URL이 /exec로 끝나는지 확인해 주세요.'});}
 }
