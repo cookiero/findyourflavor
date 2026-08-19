@@ -18,7 +18,9 @@ const WAITLIST_HEADERS = [
   '등록 시각', '이름', '연락처', '등록 위치', 'Cookie ID',
   '여행 장소', '여행 시기', 'Flavor ID', 'Flavor 이름',
   'BASE 분석', 'CREAM 분석', 'CUBE 분석', 'TOPPING 분석', '최종 여행 설명',
-  '사진 저장 여부', '데이터 버전'
+  '사진 저장 여부', '데이터 버전',
+  '여행 목적 선택', '여행 목적 직접 입력', '출발 기분 선택', '출발 기분 직접 입력',
+  '귀환 기분 선택', '귀환 기분 직접 입력', '사진 순간 기분', '그날의 공기', '바람', '답변 버전'
 ];
 
 const ANALYTICS_HEADERS = [
@@ -68,7 +70,9 @@ function doPost(e) {
       new Date(data.createdAt), data.name, data.contact, data.source, data.cookieId,
       data.destination, data.travelDate, data.flavorId, data.flavorName,
       data.baseAnalysis, data.creamAnalysis, data.cubeAnalysis,
-      data.toppingAnalysis, data.finalBake, false, data.storageVersion
+      data.toppingAnalysis, data.finalBake, false, data.storageVersion,
+      data.journeyPurpose, data.purposeNote, data.departureMood, data.departureNote,
+      data.returnMood, data.returnNote, data.photoMoods, data.air, data.wind, data.answerVersion
     ]);
   } finally {
     lock.releaseLock();
@@ -87,9 +91,9 @@ function doPost(e) {
 
 ## 4. 동작 확인
 
-배포 사이트에서 `Flavor 시작 → 결과 완료 → 친구 공유 → 공유 링크 방문 → 친구 Flavor 완료 → Cookie Jar 저장`을 한 번 수행합니다. `analytics` 시트에는 7개 열이, `waitlist` 시트에는 16개 열이 채워져야 합니다.
+배포 사이트에서 `Flavor 시작 → 결과 완료 → 친구 공유 → 공유 링크 방문 → 친구 Flavor 완료 → Cookie Jar 저장`을 한 번 수행합니다. `analytics` 시트에는 7개 열이, `waitlist` 시트에는 26개 열이 채워져야 합니다. 기존 16개 열 오른쪽(Q~Z)에 여행 기억 답변 10개 열이 자동으로 추가됩니다.
 
-사진 파일·사진 주소·이름·연락처는 `analytics`에 기록되지 않습니다. 이름과 연락처는 Cookie Jar 저장 시에만 `waitlist`에 기록됩니다.
+사진 파일·사진 주소·이름·연락처·여행 기억 답변은 `analytics`에 기록되지 않습니다. 이름, 연락처와 여행 기억 답변은 Cookie Jar 저장 시에만 `waitlist`에 기록됩니다. 질문에 답하지 않은 항목은 빈 셀로 남습니다.
 
 ## 5. 핵심 지표 계산
 

@@ -12,7 +12,7 @@ const schema={
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured'});
-  const {destination,date,images,palette,exif,curated,selectedFlavor}=req.body||{};
+  const {destination,date,images,palette,exif,curated,selectedFlavor,memory}=req.body||{};
   const allowedFlavors=['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco'];
   if(!destination||!date||!allowedFlavors.includes(selectedFlavor)||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
   if(images.some(x=>typeof x!=='string'||x.length>4_000_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
@@ -24,9 +24,12 @@ export default async function handler(req,res){
 브라우저가 실제 픽셀로 계산한 색상 비율: ${JSON.stringify(palette||[])}
 검수된 여행지 정보(있을 수 있음): ${JSON.stringify(curated||{})}
 사진 색상 점수표로 이미 확정된 Flavor: ${selectedFlavor}
+사용자가 직접 알려준 여행 기억(빈 값은 답하지 않은 항목): ${JSON.stringify(memory||{})}
 
 규칙:
 - 사진에서 실제로 보이는 장면, 빛, 구도, 활동만 근거로 쓰고 보이지 않는 사실은 꾸며내지 마세요.
+- 사용자가 직접 고르거나 쓴 여행 목적·출발과 귀환의 기분·사진을 찍던 순간의 기분·공기·바람은 그 사람의 확정된 기억입니다. 비어 있지 않은 답은 사진 관찰과 자연스럽게 연결하되, 사진에서 그 답을 알아냈다고 말하지 마세요.
+- BASE에는 여행 목적과 출발의 기분, CREAM에는 공기·바람과 반복되는 색, CUBE에는 사진을 찍던 순간의 기분, TOPPING에는 귀환의 기분과 여행의 리듬을 우선 활용하세요. 답하지 않은 항목은 억지로 채우지 마세요.
 - 행복이나 감정은 단정하지 말고 '편안해 보여요', '즐거운 분위기가 느껴져요'처럼 조심스럽게 표현하세요.
 - GPS가 없으면 장소를 확정하지 마세요. 사용자 입력은 confirmed_by_user, EXIF GPS는 supported_by_exif, 시각 추정은 visual_guess로 구분하세요.
 - 계절은 여행지의 실제 기후와 입력 월을 기준으로 쓰세요. 북반구 기준 표현을 열대·남반구에 적용하지 마세요.

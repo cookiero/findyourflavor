@@ -6,10 +6,12 @@ export default async function handler(req,res){
   if(website)return res.status(200).json({ok:true});
   if(typeof name!=='string'||name.trim().length<1||name.trim().length>40||typeof contact!=='string'||contact.trim().length<2||contact.trim().length>120)return res.status(400).json({error:'Invalid waitlist entry'});
   const text=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
+  const list=value=>Array.isArray(value)?value.map(item=>text(item,80)).filter(Boolean).slice(0,2).join(', '):text(value,180);
   const savedCookie={
     cookieId:text(cookie?.cookieId,80),destination:text(cookie?.destination,80),travelDate:text(cookie?.travelDate,20),flavorId:text(cookie?.flavorId,40),flavorName:text(cookie?.flavorName,60),
     baseAnalysis:text(cookie?.baseAnalysis,4000),creamAnalysis:text(cookie?.creamAnalysis,4000),cubeAnalysis:text(cookie?.cubeAnalysis,4000),toppingAnalysis:text(cookie?.toppingAnalysis,4000),finalBake:text(cookie?.finalBake,4000),
-    photosStored:false,storageVersion:1
+    journeyPurpose:text(cookie?.journeyPurpose,120),purposeNote:text(cookie?.purposeNote,500),departureMood:text(cookie?.departureMood,120),departureNote:text(cookie?.departureNote,500),returnMood:text(cookie?.returnMood,120),returnNote:text(cookie?.returnNote,500),photoMoods:list(cookie?.photoMoods),air:text(cookie?.air,120),wind:text(cookie?.wind,120),answerVersion:Number(cookie?.answerVersion)||1,
+    photosStored:false,storageVersion:2
   };
   if(!savedCookie.cookieId||!savedCookie.destination||!/^\d{4}-\d{2}$/.test(savedCookie.travelDate)||!savedCookie.flavorId||!savedCookie.flavorName||!savedCookie.baseAnalysis||!savedCookie.creamAnalysis||!savedCookie.cubeAnalysis||!savedCookie.toppingAnalysis||!savedCookie.finalBake)return res.status(400).json({error:'Invalid cookie record',message:'Cookie Jar에 담을 여행 기록이 완전하지 않아요.'});
   try{

@@ -74,6 +74,15 @@
         </label>
         <label class="photo-slot optional"><input type="file" accept="image/*" data-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>선택 사항</small><img alt="세 번째 여행 사진 미리보기"></label>
       </div>
+      <section class="memory-questions" data-memory="main" aria-labelledby="memoryTitle">
+        <header><span class="eyebrow">A LITTLE MORE FLAVOR</span><h3 id="memoryTitle">그날의 마음도<br>쿠키에 넣어볼까요?</h3><p>모두 선택 사항이에요. 기억나는 만큼만 알려주세요.</p></header>
+        <fieldset><legend>1. 이번 여행은 왜 떠났나요?</legend><div class="choice-chips"><label><input type="radio" name="main-purpose" value="쉬고 싶어서"><span>쉬고 싶어서</span></label><label><input type="radio" name="main-purpose" value="새로운 곳이 궁금해서"><span>새로운 곳이 궁금해서</span></label><label><input type="radio" name="main-purpose" value="소중한 사람과 시간을 보내려고"><span>소중한 사람과 함께</span></label><label><input type="radio" name="main-purpose" value="특별한 날을 기념하려고"><span>특별한 날을 기념하려고</span></label><label><input type="radio" name="main-purpose" value="계획 없이 훌쩍"><span>계획 없이 훌쩍</span></label></div><textarea data-memory-field="purposeNote" maxlength="150" placeholder="+ 내 이야기를 조금 더 적어도 좋아요"></textarea></fieldset>
+        <fieldset><legend>2. 떠날 때 어떤 마음이었나요?</legend><div class="choice-chips"><label><input type="radio" name="main-departure" value="설렜어요"><span>설렜어요</span></label><label><input type="radio" name="main-departure" value="조금 지쳐 있었어요"><span>조금 지쳐 있었어요</span></label><label><input type="radio" name="main-departure" value="아무 생각 없이 떠났어요"><span>아무 생각 없이</span></label><label><input type="radio" name="main-departure" value="조금 걱정됐어요"><span>조금 걱정됐어요</span></label><label><input type="radio" name="main-departure" value="무언가 달라지길 바랐어요"><span>달라지길 바랐어요</span></label></div><textarea data-memory-field="departureNote" maxlength="150" placeholder="+ 떠나기 전의 마음을 직접 적어주세요"></textarea></fieldset>
+        <fieldset><legend>3. 돌아올 때는 어떤 마음이었나요?</legend><div class="choice-chips"><label><input type="radio" name="main-return" value="푹 쉬고 돌아온 기분이었어요"><span>푹 쉬었어요</span></label><label><input type="radio" name="main-return" value="아쉬워서 더 머물고 싶었어요"><span>더 머물고 싶었어요</span></label><label><input type="radio" name="main-return" value="새로운 에너지가 생겼어요"><span>에너지가 생겼어요</span></label><label><input type="radio" name="main-return" value="복잡했던 생각이 정리됐어요"><span>생각이 정리됐어요</span></label><label><input type="radio" name="main-return" value="예상과 다른 여행이었어요"><span>예상과 달랐어요</span></label></div><textarea data-memory-field="returnNote" maxlength="150" placeholder="+ 돌아오는 길의 마음을 직접 적어주세요"></textarea></fieldset>
+        <fieldset><legend>4. 사진을 찍던 순간의 기분은?</legend><div class="choice-chips multi"><label><input type="checkbox" data-memory-check="photoMoods" value="신났어요"><span>신났어요</span></label><label><input type="checkbox" data-memory-check="photoMoods" value="편안했어요"><span>편안했어요</span></label><label><input type="checkbox" data-memory-check="photoMoods" value="뭉클했어요"><span>뭉클했어요</span></label><label><input type="checkbox" data-memory-check="photoMoods" value="신기했어요"><span>신기했어요</span></label><label><input type="checkbox" data-memory-check="photoMoods" value="고요했어요"><span>고요했어요</span></label><label><input type="checkbox" data-memory-check="photoMoods" value="정신없이 즐거웠어요"><span>정신없이 즐거웠어요</span></label></div></fieldset>
+        <fieldset><legend>5. 그날의 공기와 바람은?</legend><div class="memory-selects"><label><span>공기</span><select data-memory-field="air"><option value="">잘 기억나지 않아요</option><option>햇살이 따뜻했어요</option><option>덥고 끈적했어요</option><option>비 냄새가 났어요</option><option>차갑고 맑았어요</option><option>포근하고 흐렸어요</option></select></label><label><span>바람</span><select data-memory-field="wind"><option value="">잘 기억나지 않아요</option><option>거의 없었어요</option><option>살랑살랑 불었어요</option><option>머리가 헝클어질 만큼 불었어요</option><option>비와 함께 세게 불었어요</option></select></label></div></fieldset>
+        <p class="memory-privacy">Cookie Jar에 저장하면 선택하거나 직접 적은 답변도 함께 보관돼요. 민감한 개인정보는 적지 말아주세요.</p>
+      </section>
       <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 분석을 위해서만 안전한 서버로 전송돼요.</p>
       <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
     </section>
@@ -82,6 +91,9 @@
       <div class="baking-stage" id="bakingStage" data-phase="dough">
         <div class="oven-glow" aria-hidden="true"></div>
         <img class="baking-cookie" id="bakingCookie" src="assets/cookie-ring.png" alt="천천히 구워지고 있는 Cookie:Ro 쿠키">
+        <img class="baking-crumbs" id="bakingCrumbs" alt="" aria-hidden="true">
+        <img class="paw-imprint" src="assets/bake/쿠키로 발자국.png" alt="" aria-hidden="true">
+        <img class="paw-stamp" id="pawStamp" src="assets/bake/stamp.png" alt="" aria-hidden="true">
         <span class="baking-spark spark-one" aria-hidden="true">✦</span><span class="baking-spark spark-two" aria-hidden="true">✦</span>
         <div class="loading-jar" aria-hidden="true"><img src="assets/cookie-jar.png" alt=""></div>
         <span class="bake-sound" aria-hidden="true"></span>
@@ -181,6 +193,7 @@
         <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="1"><span class="plus">＋</span><strong>두 번째 장면</strong><small>선택 사항</small><img alt="두 번째 여행 사진 미리보기"></label>
         <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>선택 사항</small><img alt="세 번째 여행 사진 미리보기"></label>
       </div>
+      <section class="memory-questions compact-memory" data-memory="friend" aria-label="친구의 여행 기억 질문"></section>
       <button class="primary-button" id="friendFindButton" disabled>여행지·시기·사진을 알려 주세요</button>
     </section>
 
