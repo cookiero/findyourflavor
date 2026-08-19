@@ -67,7 +67,7 @@ function getJourneyMemory(flow='main'){
   const section=document.querySelector(`[data-memory="${flow}"]`);if(!section)return{};
   const chosen=name=>section.querySelector(`input[name="${flow}-${name}"]:checked`)?.value||'';
   const field=name=>section.querySelector(`[data-memory-field="${name}"]`)?.value.trim()||'';
-  return{purpose:chosen('purpose'),purposeNote:field('purposeNote'),departureMood:chosen('departure'),departureNote:field('departureNote'),returnMood:chosen('return'),returnNote:field('returnNote'),photoMoods:[...section.querySelectorAll('[data-memory-check="photoMoods"]:checked')].map(input=>input.value).slice(0,2),air:field('air'),wind:field('wind'),answerVersion:1};
+  return{purpose:chosen('purpose'),purposeNote:field('purposeNote'),departureMood:chosen('departure'),departureNote:field('departureNote'),returnMood:chosen('return'),returnNote:field('returnNote'),photoMoods:[...section.querySelectorAll('[data-memory-check="photoMoods"]:checked')].map(input=>input.value).slice(0,2),photoMoodNote:field('photoMoodNote'),air:field('air'),wind:field('wind'),airWindNote:field('airWindNote'),answerVersion:2};
 }
 initMemoryQuestions();
 
@@ -281,7 +281,7 @@ function getCookieRecord(card){
   const friendFlow=!!card.closest('.compare-screen'),flavor=friendFlow?flavors.find(item=>item.name===document.getElementById('compareNameB').textContent):currentFlavor;
   const destination=document.getElementById(friendFlow?'friendDestinationInput':'destinationInput').value.trim(),travelDate=document.getElementById(friendFlow?'friendDateInput':'dateInput').value;
   const context={palette:friendFlow?friendPalette:photoPalette,destination},analysis=friendFlow?friendAi:aiInsight,recipe={...fallbackRecipe(flavor,context),...(analysis||{})};
-  const memory=getJourneyMemory(friendFlow?'friend':'main');return{cookieId:friendFlow?friendCookieId:currentCookieId,destination,travelDate,flavorId:flavor.id,flavorName:flavor.name,baseAnalysis:recipe.base_analysis,creamAnalysis:recipe.cream_analysis,cubeAnalysis:recipe.cube_analysis,toppingAnalysis:recipe.topping_analysis,finalBake:recipe.final_bake,journeyPurpose:memory.purpose,purposeNote:memory.purposeNote,departureMood:memory.departureMood,departureNote:memory.departureNote,returnMood:memory.returnMood,returnNote:memory.returnNote,photoMoods:memory.photoMoods,air:memory.air,wind:memory.wind,answerVersion:memory.answerVersion,photosStored:false,storageVersion:2};
+  const memory=getJourneyMemory(friendFlow?'friend':'main');return{cookieId:friendFlow?friendCookieId:currentCookieId,destination,travelDate,flavorId:flavor.id,flavorName:flavor.name,baseAnalysis:recipe.base_analysis,creamAnalysis:recipe.cream_analysis,cubeAnalysis:recipe.cube_analysis,toppingAnalysis:recipe.topping_analysis,finalBake:recipe.final_bake,journeyPurpose:memory.purpose,purposeNote:memory.purposeNote,departureMood:memory.departureMood,departureNote:memory.departureNote,returnMood:memory.returnMood,returnNote:memory.returnNote,photoMoods:memory.photoMoods,photoMoodNote:memory.photoMoodNote,air:memory.air,wind:memory.wind,airWindNote:memory.airWindNote,answerVersion:memory.answerVersion,photosStored:false,storageVersion:3};
 }
 function markWaitlistComplete(card,cookieId,flavorName){card.innerHTML=waitlistSuccessMarkup;card.querySelectorAll('[data-jar-flavor]').forEach(node=>node.textContent=flavorName);try{if(cookieId)localStorage.setItem(cookieStorageKey(cookieId),'complete')}catch{}}
 function prepareWaitlistCard(card,flavorName='Flavor',cookieId=null){
