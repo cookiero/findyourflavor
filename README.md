@@ -26,5 +26,6 @@ Vercel에 배포하고 `OPENAI_API_KEY` 환경 변수를 설정하면 `/api/anal
 - 친구 공유 링크는 URL의 `#friend=...` 값을 사용하므로 GitHub Pages에서도 별도 라우팅 설정 없이 작동합니다.
 - 공유 링크로 들어온 친구도 여행지·시기·사진 1~2장을 입력하며, Flavor Match 아래에서 AI 코멘트·현지 계절·음식·실제 사진 색상 비율과 jar까지 동일하게 확인합니다.
 - 모든 Cookie:Ro 이미지 자산은 `assets` 폴더에 의미 있는 영문 파일명으로 정리되어 있습니다.
-- 결과 페이지의 연락처 저장은 “내 Cookie Jar에 이 쿠키 담아두기”로 안내되며, 기존 `/api/waitlist`와 `GOOGLE_SHEETS_WEBHOOK_URL` 연동을 그대로 사용합니다.
+- 결과 페이지의 “내 Cookie Jar에 이 쿠키 담아두기”는 연락처와 함께 여행 장소·시기, Flavor, BASE/CREAM/CUBE/TOPPING 분석, 최종 설명, 고유 Cookie ID를 `/api/waitlist`와 `GOOGLE_SHEETS_WEBHOOK_URL`을 통해 보존합니다. 사진 원본은 저장하지 않습니다.
+- `/api/analytics`는 같은 Apps Script의 `analytics` 시트에 익명 행동 이벤트를 기록합니다. Vercel Pro Custom Events는 필요하지 않습니다. 설정과 지표 수식은 `GOOGLE_SHEETS_WAITLIST_SETUP.md`, 이벤트 정의는 `ANALYTICS_EVENTS.md`를 확인하세요.
 - 전환 이벤트와 Vercel 확인 방법은 `ANALYTICS_EVENTS.md`를 참고하세요.
