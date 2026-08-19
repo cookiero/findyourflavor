@@ -56,12 +56,23 @@ function localSeason(place,month){
 
 const screens=[...document.querySelectorAll('.screen')];
 const dots=[...document.querySelectorAll('.progress-dots i')];
-let photos=[]; let friendPhotos=[]; let currentFlavor=flavors[2]; let friendBase=null; let photoPalette=null; let photoExif=[]; let aiInsight=null; let friendPalette=null; let friendExif=[]; let friendAi=null; let sharedData=null;
+let photos=[]; let friendPhotos=[]; let currentFlavor=flavors[2]; let friendBase=null; let photoPalette=null; let photoExif=[]; let aiInsight=null; let friendPalette=null; let friendExif=[]; let friendAi=null; let sharedData=null; let currentCookieId=null; let friendCookieId=null;
+
+function createCookieId(){return globalThis.crypto?.randomUUID?.()||`cookie_${Date.now()}_${Math.random().toString(36).slice(2,10)}`}
+
+function analyticsSessionId(){
+  const key='cookiero-analytics-session';
+  try{let id=sessionStorage.getItem(key);if(!id){id=globalThis.crypto?.randomUUID?.()||`session_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;sessionStorage.setItem(key,id)}return id}catch{return`session_${Date.now()}_${Math.random().toString(36).slice(2,10)}`}
+}
+
+const sessionId=analyticsSessionId();
 
 function trackEvent(name,properties={}){
   try{
-    if(typeof window.va==='function')window.va('event',name,properties);
     window.dispatchEvent(new CustomEvent('cookiero:analytics',{detail:{name,properties}}));
+    const friendFlow=['friend_landing_viewed','friend_flavor_completed'].includes(name)||properties.flow==='shared_friend';
+    const destination=String(properties.destination||document.getElementById(friendFlow?'friendDestinationInput':'destinationInput')?.value||'').trim().slice(0,80);
+    fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({session_id:sessionId,event_name:name,flavor:properties.flavor||'',source:properties.source||(friendFlow?'friend_share':'direct'),destination,referrer:document.referrer||''})}).catch(()=>{});
   }catch(error){console.debug('Analytics unavailable',error)}
 }
 
@@ -123,7 +134,7 @@ function startBaking(){const stage=document.getElementById('bakingStage'),cookie
 async function finishBaking(flavor,next){const stage=document.getElementById('bakingStage'),cookie=document.getElementById('bakingCookie'),copy=document.getElementById('loadingText'),title=document.getElementById('loadingTitle');cookie.src=flavor.file;stage.dataset.phase='top';copy.textContent='마지막 토핑을 올리는 중...';playBakingChime('oven');await pause(850);title.textContent='띵— 오늘의 맛이 구워졌어요.';copy.textContent='완성된 쿠키를 Jar에 담는 중...';stage.dataset.phase='drop';await pause(850);stage.dataset.phase='done';copy.textContent='오늘의 맛을 담아두었어요.';playBakingChime('jar');await pause(850);next()}
 function renderResult(flavor){
   currentFlavor=flavor; const n=flavors.indexOf(flavor)+1;
-  syncJarFlavor(flavor.name);
+  prepareWaitlistCard(document.querySelector('#result [data-waitlist]'),flavor.name,currentCookieId);
   document.getElementById('resultName').textContent=flavor.name;
   document.getElementById('resultTagline').textContent=flavor.tagline;
   document.getElementById('flavorNumber').textContent=String(n).padStart(2,'0')+' / 05';
@@ -198,23 +209,24 @@ async function beginFinding(file,fromFriend=false){
   if(!fromFriend){try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}flavor=deterministicFlavor(photoPalette,hash);try{aiInsight=await requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif,selectedFlavor:flavor.name})}catch{aiInsight=null}}
   await minimum;stopBaking();await finishBaking(flavor,()=>{if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result');trackEvent('flavor_completed',{flow:'original',flavor:flavor.id})}});
 }
-document.getElementById('findButton').addEventListener('click',()=>{trackEvent('flavor_started',{flow:'original',photo_count:photos.filter(Boolean).length});prepareBakingAudio();beginFinding(photos[0])});
+document.getElementById('findButton').addEventListener('click',()=>{currentCookieId=createCookieId();trackEvent('flavor_started',{flow:'original',photo_count:photos.filter(Boolean).length});prepareBakingAudio();beginFinding(photos[0])});
 async function beginFriendFinding(){
   showScreen('loading');document.getElementById('loadingTitle').innerHTML='친구의 여행을 굽는 중<span class="loading-dots"></span>';const selected=friendPhotos.filter(Boolean),stopBaking=startBaking(),minimum=pause(4300);
   try{[friendPalette,friendExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{friendPalette=null;friendExif=[]}
   const hash=await fingerprint(selected[0]),flavor=deterministicFlavor(friendPalette,hash);
   try{friendAi=await requestAiAnalysis(selected,{destination:document.getElementById('friendDestinationInput').value.trim(),date:document.getElementById('friendDateInput').value,palette:friendPalette,exif:friendExif,selectedFlavor:flavor.name})}catch{friendAi=null}
-  await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor);trackEvent('flavor_completed',{flow:'shared_friend',flavor:flavor.id})});
+  await minimum;stopBaking();await finishBaking(flavor,()=>{renderCompare(friendBase,flavor);renderFriendAnalysis(flavor);trackEvent('friend_flavor_completed',{flow:'shared_friend',flavor:flavor.id})});
 }
-document.getElementById('friendFindButton').addEventListener('click',()=>{trackEvent('flavor_started',{flow:'shared_friend',photo_count:friendPhotos.filter(Boolean).length});prepareBakingAudio();beginFriendFinding()});
+document.getElementById('friendFindButton').addEventListener('click',()=>{friendCookieId=createCookieId();prepareBakingAudio();beginFriendFinding()});
 
 function shareUrl(){const payload={version:2,flavorId:currentFlavor.id,analysis:shareAnalysis(currentFlavor,aiInsight)},url=new URL(location.href);url.search='';url.hash=`share=${encodeShare(payload)}`;return url.toString()}
 document.getElementById('shareButton').addEventListener('click',async()=>{
   const button=document.getElementById('shareButton');button.classList.add('is-loading');button.innerHTML='여행을 포장하는 중 <span>↻</span>';
   trackEvent('friend_share_clicked',{flavor:currentFlavor.id,method:navigator.share?'native_share':'clipboard'});
-  try{const url=shareUrl(),data={title:'Cookie:Ro — Find the Flavor',text:`내 여행은 ${currentFlavor.name} 맛! 쿠키 레시피를 보고 우리 여행도 비교해 봐.`,url};trackEvent('friend_share_link_created',{flavor:currentFlavor.id,method:navigator.share?'native_share':'clipboard'});if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(url);document.getElementById('shareStatus').textContent='사진 없이 Flavor 설명만 담긴 링크를 복사했어요!'}}catch(e){if(e.name!=='AbortError')toast(e.message||'공유 링크를 만들지 못했어요.')}finally{button.classList.remove('is-loading');button.innerHTML='같이 여행한 친구에게 보내기 <span>↗</span>'}
+  try{const url=shareUrl(),data={title:'Cookie:Ro — Find the Flavor',text:`내 여행은 ${currentFlavor.name} 맛! 쿠키 레시피를 보고 우리 여행도 비교해 봐.`,url};if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(url);document.getElementById('shareStatus').textContent='사진 없이 Flavor 설명만 담긴 링크를 복사했어요!'}}catch(e){if(e.name!=='AbortError')toast(e.message||'공유 링크를 만들지 못했어요.')}finally{button.classList.remove('is-loading');button.innerHTML='같이 여행한 친구에게 보내기 <span>↗</span>'}
 });
-function initFriend(){const shareValue=location.hash.match(/share=([^&]+)/)?.[1],legacyId=location.hash.match(/friend=([\w-]+)/)?.[1];if(!shareValue&&!legacyId)return;if(shareValue){try{sharedData=decodeShare(shareValue)}catch{toast('공유된 Flavor 설명을 읽지 못했어요.');return}}const id=sharedData?.flavorId||legacyId;friendBase=flavors.find(f=>f.id===id);if(!friendBase)return;document.getElementById('friendCookie').src=friendBase.file;document.getElementById('friendFlavor').textContent=friendBase.name;if(sharedData?.analysis){const story=document.getElementById('sharedStory');story.hidden=false;document.querySelector('.friend-invite').classList.add('has-story');renderRecipe('sharedRecipeSections','sharedFinalBake',friendBase,sharedData.analysis)}showScreen('friend')}
+let friendLandingTracked=false;
+function initFriend(){const shareValue=location.hash.match(/share=([^&]+)/)?.[1],legacyId=location.hash.match(/friend=([\w-]+)/)?.[1];if(!shareValue&&!legacyId)return;if(shareValue){try{sharedData=decodeShare(shareValue)}catch{toast('공유된 Flavor 설명을 읽지 못했어요.');return}}const id=sharedData?.flavorId||legacyId;friendBase=flavors.find(f=>f.id===id);if(!friendBase)return;if(!friendLandingTracked){friendLandingTracked=true;trackEvent('friend_landing_viewed',{flavor:friendBase.id,source:'friend_share'})}document.getElementById('friendCookie').src=friendBase.file;document.getElementById('friendFlavor').textContent=friendBase.name;if(sharedData?.analysis){const story=document.getElementById('sharedStory');story.hidden=false;document.querySelector('.friend-invite').classList.add('has-story');renderRecipe('sharedRecipeSections','sharedFinalBake',friendBase,sharedData.analysis)}showScreen('friend')}
 function renderFriendAnalysis(flavor){
   const destination=document.getElementById('friendDestinationInput').value.trim(),date=document.getElementById('friendDateInput').value,month=Number(date.split('-')[1]),place=findPlace(destination),[season,seasonNote]=localSeason(place,month),palette=friendPalette||flavor.colors;
   document.getElementById('friendResultTitle').textContent=flavor.name;
@@ -242,38 +254,42 @@ function renderCompare(a,b){
   document.getElementById('matchTitle').innerHTML=same?'우리 여행은,<br>같은 맛!':'같은 여행,<br>서로 다른 맛.';
   document.getElementById('matchLabel').textContent=same?'PERFECTLY MATCHED':'A DELICIOUS DIFFERENCE';
   document.getElementById('matchCopy').textContent=same?'같은 순간에 마음이 가는 두 사람.\n여행의 속도도, 기억하는 장면도 닮아 있어요.\n다음 여행의 기억도 같은 Jar에 담길 것 같아요.':`${a.name}의 시선과 ${b.name}의 리듬이 만나 여행이 더 입체적이에요.\n같은 곳을 보고도 서로 다른 이야기를 가져오는, 맛있는 차이를 가진 조합이에요.`;
-  syncJarFlavor(b.name);
+  prepareWaitlistCard(document.querySelector('#compare [data-waitlist]'),b.name,friendCookieId);
   showScreen('compare');
 }
 function toast(message){const t=document.getElementById('toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
-const waitlistFormMarkup=`<span class="conversion-step">02 · SAVE YOUR COOKIE</span><span class="waitlist-kicker">YOUR COOKIE IS READY 🍪</span><h3>이 여행의 쿠키를<br>Jar에 담아둘까요?</h3><p class="waitlist-copy">Cookie:Ro가 문을 열면 오늘 구운 <strong data-jar-flavor>Flavor</strong>부터 당신의 Cookie Jar에 담아드릴게요.</p><form class="waitlist-form"><label><span>1. 이름</span><input name="name" type="text" autocomplete="name" maxlength="40" placeholder="이름을 적어주세요" required></label><label><span>2. 연락받을 곳</span><input name="contact" type="text" autocomplete="email" maxlength="120" placeholder="이메일 주소 / 전화번호 / 카카오톡 ID 중 하나" required></label><label class="waitlist-honey" aria-hidden="true"><span>Website</span><input name="website" type="text" tabindex="-1" autocomplete="off"></label><p class="waitlist-note">남겨주신 연락처는 Cookie:Ro 오픈 소식과 Cookie Jar 준비 안내를 보내는 데 사용돼요.</p><button type="submit">🍪 내 Cookie Jar에 이 쿠키 담아두기</button><p class="waitlist-status" role="status" aria-live="polite"></p></form>`;
+const waitlistFormMarkup=`<span class="conversion-step">02 · SAVE YOUR COOKIE</span><span class="waitlist-kicker">YOUR COOKIE IS READY 🍪</span><h3>이 여행의 쿠키를<br>Jar에 담아둘까요?</h3><p class="waitlist-copy">Cookie:Ro가 문을 열면 오늘 구운 <strong data-jar-flavor>Flavor</strong>부터 당신의 Cookie Jar에 담아드릴게요.</p><form class="waitlist-form"><label><span>1. 이름</span><input name="name" type="text" autocomplete="name" maxlength="40" placeholder="이름을 적어주세요" required></label><label><span>2. 연락받을 곳</span><input name="contact" type="text" autocomplete="email" maxlength="120" placeholder="이메일 주소 / 전화번호 / 카카오톡 ID 중 하나" required></label><label class="waitlist-honey" aria-hidden="true"><span>Website</span><input name="website" type="text" tabindex="-1" autocomplete="off"></label><p class="waitlist-note">여행 장소·시기와 완성된 Flavor 설명을 보관해요. 사진은 저장하지 않아요.<br>연락처는 Cookie:Ro 오픈 소식과 Cookie Jar 이전 안내에 사용돼요.</p><button type="submit">🍪 내 Cookie Jar에 이 쿠키 담아두기</button><p class="waitlist-status" role="status" aria-live="polite"></p></form>`;
 const waitlistSuccessMarkup=`<div class="waitlist-success"><span class="cookie-mark" aria-hidden="true">🍪</span><h3>Jar에 담아두었어요.</h3><p><strong data-jar-flavor>이 Flavor</strong>를 기억해둘게요.<br>Cookie:Ro가 문을 열면 가장 먼저 알려드릴게요.</p></div>`;
 function syncJarFlavor(name=currentFlavor.name){document.querySelectorAll('[data-jar-flavor]').forEach(node=>node.textContent=name)}
-function markWaitlistComplete(){document.querySelectorAll('[data-waitlist]').forEach(card=>card.innerHTML=waitlistSuccessMarkup);try{localStorage.setItem('cookiero-waitlist','complete')}catch{}}
-function initWaitlist(){
-  let complete=false;
-  try{complete=localStorage.getItem('cookiero-waitlist')==='complete'}catch{}
-  document.querySelectorAll('[data-waitlist]').forEach(card=>{
-    card.innerHTML=complete?waitlistSuccessMarkup:waitlistFormMarkup;
-    syncJarFlavor();
-    if(complete)return;
-    const form=card.querySelector('form'),status=card.querySelector('.waitlist-status'),button=form.querySelector('button');
-    form.addEventListener('submit',async event=>{
-      event.preventDefault();
-      const data=new FormData(form),name=String(data.get('name')||'').trim(),contact=String(data.get('contact')||'').trim(),source=card.closest('.compare-screen')?'friend-result':'my-result';
-      if(!name||contact.length<2){status.textContent='이름과 연락받을 곳을 모두 알려주세요.';return}
-      button.disabled=true;button.textContent='Cookie Jar를 준비하는 중…';status.textContent='';
-      try{
-        const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,contact,website:String(data.get('website')||''),source})}),result=await response.json().catch(()=>null);
-        if(!response.ok)throw new Error(result?.message||'오븐 연결이 잠시 느려요. 조금 뒤 다시 시도해 주세요.');
-        const flavorName=card.closest('.compare-screen')?document.getElementById('compareNameB').textContent:currentFlavor.name;
-        trackEvent('jar_save_completed',{flow:source,flavor:flavorName.toLowerCase().replaceAll(' ','-')});
-        markWaitlistComplete();syncJarFlavor(flavorName);
-      }catch(error){
-        status.textContent=error.message;button.disabled=false;button.textContent='🍪 내 Cookie Jar에 이 쿠키 담아두기';
-      }
-    });
+function cookieStorageKey(cookieId){return cookieId?`cookiero-cookie-saved:${cookieId}`:''}
+function getCookieRecord(card){
+  const friendFlow=!!card.closest('.compare-screen'),flavor=friendFlow?flavors.find(item=>item.name===document.getElementById('compareNameB').textContent):currentFlavor;
+  const destination=document.getElementById(friendFlow?'friendDestinationInput':'destinationInput').value.trim(),travelDate=document.getElementById(friendFlow?'friendDateInput':'dateInput').value;
+  const context={palette:friendFlow?friendPalette:photoPalette,destination},analysis=friendFlow?friendAi:aiInsight,recipe={...fallbackRecipe(flavor,context),...(analysis||{})};
+  return{cookieId:friendFlow?friendCookieId:currentCookieId,destination,travelDate,flavorId:flavor.id,flavorName:flavor.name,baseAnalysis:recipe.base_analysis,creamAnalysis:recipe.cream_analysis,cubeAnalysis:recipe.cube_analysis,toppingAnalysis:recipe.topping_analysis,finalBake:recipe.final_bake,photosStored:false,storageVersion:1};
+}
+function markWaitlistComplete(card,cookieId,flavorName){card.innerHTML=waitlistSuccessMarkup;card.querySelectorAll('[data-jar-flavor]').forEach(node=>node.textContent=flavorName);try{if(cookieId)localStorage.setItem(cookieStorageKey(cookieId),'complete')}catch{}}
+function prepareWaitlistCard(card,flavorName='Flavor',cookieId=null){
+  if(!card)return;
+  let complete=false;try{complete=!!cookieId&&localStorage.getItem(cookieStorageKey(cookieId))==='complete'}catch{}
+  card.innerHTML=complete?waitlistSuccessMarkup:waitlistFormMarkup;
+  card.querySelectorAll('[data-jar-flavor]').forEach(node=>node.textContent=flavorName);
+  if(complete)return;
+  const form=card.querySelector('form'),status=card.querySelector('.waitlist-status'),button=form.querySelector('button');
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const data=new FormData(form),name=String(data.get('name')||'').trim(),contact=String(data.get('contact')||'').trim(),source=card.closest('.compare-screen')?'friend-result':'my-result',cookie=getCookieRecord(card);
+    if(!name||contact.length<2){status.textContent='이름과 연락받을 곳을 모두 알려주세요.';return}
+    if(!cookie.cookieId||!cookie.destination||!cookie.travelDate){status.textContent='여행 기록을 다시 확인한 뒤 저장해 주세요.';return}
+    button.disabled=true;button.textContent='Cookie Jar를 준비하는 중…';status.textContent='';
+    try{
+      const response=await fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,contact,website:String(data.get('website')||''),source,cookie})}),result=await response.json().catch(()=>null);
+      if(!response.ok)throw new Error(result?.message||'오븐 연결이 잠시 느려요. 조금 뒤 다시 시도해 주세요.');
+      trackEvent('jar_save_completed',{flow:source,flavor:cookie.flavorId});
+      markWaitlistComplete(card,cookie.cookieId,cookie.flavorName);
+    }catch(error){status.textContent=error.message;button.disabled=false;button.textContent='🍪 내 Cookie Jar에 이 쿠키 담아두기'}
   });
 }
+function initWaitlist(){document.querySelectorAll('[data-waitlist]').forEach(card=>prepareWaitlistCard(card))}
 window.addEventListener('hashchange',initFriend);initFriend();
 initWaitlist();
