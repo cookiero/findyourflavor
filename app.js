@@ -2,16 +2,16 @@ const flavors = [
   {id:'cotton-candy',name:'Cotton Candy',file:'assets/cotton-candy.png',jar:'assets/cotton-candy-jar.png',tagline:'낯선 순간도 다정한 추억으로 바꾸는 맛',reason:'사람과 표정, 작고 귀여운 장면을 자주 담았어요. 어디서든 금세 마음을 열고 여행의 모든 순간에 색을 더하는 여행자예요.',traits:['#다정한 발견','#분위기 수집가','#함께라서 좋아'],colors:[['Strawberry Pink','#ef7fa9',38],['Cloud Cream','#f7deb0',32],['Soda Blue','#70c7d9',18],['Cocoa Dot','#6b3f25',12]]},
   {id:'lemon-cream',name:'Lemon Cream',file:'assets/lemon-cream.png',jar:'assets/lemon-cream-jar.png',tagline:'가볍고 선명하게 하루를 깨우는 맛',reason:'빛이 맑고 여백이 편안한 장면이 많아요. 복잡한 계획보다 꼭 보고 싶은 것을 또렷하게 고르는 산뜻한 여행자예요.',traits:['#맑은 취향','#가벼운 발걸음','#선명한 기억'],colors:[['Lemon Glow','#f3c947',44],['Butter Cream','#ffe7a2',31],['Vanilla Milk','#fff3d5',17],['Cocoa Dot','#80603a',8]]},
   {id:'mango-soda',name:'Mango Soda',file:'assets/mango-soda.png',jar:'assets/mango-soda-jar.png',tagline:'햇살을 발견하면 망설임 없이 뛰어드는 맛',reason:'밝은 색과 탁 트인 장면이 많아요. 계획보다는 그날의 기분을 따라 움직이고, 작은 순간도 축제로 만드는 여행자예요.',traits:['#즉흥 한 스푼','#햇살 수집가','#기분 좋은 에너지'],colors:[['Mango Orange','#f4a51c',48],['Golden Soda','#ffc94f',27],['Cream Foam','#fff0ce',16],['Lime Zest','#78933d',9]]},
-  {id:'matcha-latte',name:'Matcha Latte',file:'assets/matcha-latte.png',jar:'assets/matcha-latte-jar.png',tagline:'느린 호흡으로 오래 머무는 맛',reason:'자연스러운 색과 차분한 시선이 느껴져요. 많이 보기보다 깊게 머물며 장소의 결을 기억하는 여행자예요.',traits:['#느린 여행','#고요한 관찰자','#취향의 깊이'],colors:[['Deep Matcha','#6f7629',46],['Moss Green','#9a9d48',25],['Latte Cream','#e7dca5',18],['Cocoa Pearl','#50351e',11]]},
+  {id:'matcha-latte',name:'Matcha Latte',file:'assets/matcha-latte.png',jar:'assets/matcha-latte-jar.png',tagline:'느린 호흡으로 오래 머무는 맛',reason:'자연스러운 색과 차분한 시선이 느껴져요. 많이 보기보다 깊게 머물며 장소의 결을 기억하는 여행자예요.',traits:['#느린 여행','#고요한 관찰자','#취향의 깊이'],colors:[['Deep Matcha','#6f7629',46],['Moss Green','#9a9d48',25],['Matcha Cream','#e7dca5',18],['Cocoa Pearl','#50351e',11]]},
   {id:'midnight-choco',name:'Midnight Choco',file:'assets/midnight-choco.png',jar:'assets/midnight-choco-jar.png',tagline:'밤이 깊어질수록 이야기가 진해지는 맛',reason:'명암이 깊고 예상 밖의 순간을 담았어요. 남들이 지나치는 시간에 더 선명하게 깨어나는 호기심 많은 여행자예요.',traits:['#밤의 탐험가','#반전 매력','#진한 여운'],colors:[['Dark Cocoa','#452015',51],['Brownie','#74361f',27],['Berry Night','#713eb4',13],['Cherry Spark','#bf2338',9]]}
 ];
 
 const recipes={
-  'cotton-candy':[['BASE','여행의 온도','🍪','Pink Cloud Base'],['CREAM','여행의 색','☁️','Blue Cloud Cream'],['CUBE','기억의 조각','🩷','Marshmallow Cubes'],['TOPPING','여행의 리듬','✦','Rainbow Sprinkles']],
-  'lemon-cream':[['BASE','여행의 온도','🍋','Fresh Morning Base'],['CREAM','여행의 색','🥛','Cream Glaze'],['CUBE','기억의 조각','〰','White Choco Cubes'],['TOPPING','여행의 리듬','✦','Lemon Zest']],
-  'mango-soda':[['BASE','여행의 온도','🥭','Sun-Kissed Base'],['CREAM','여행의 색','🫧','Soda Cream'],['CUBE','기억의 조각','🟨','Mango Cubes'],['TOPPING','여행의 리듬','✦','Popping Candy']],
-  'matcha-latte':[['BASE','여행의 온도','🍵','Mellow Base'],['CREAM','여행의 색','🥛','Latte Cream'],['CUBE','기억의 조각','🟢','White Choco Cubes'],['TOPPING','여행의 리듬','🍃','Roasted Choco Pearls']],
-  'midnight-choco':[['BASE','여행의 온도','🍫','Deep Night Base'],['CREAM','여행의 색','🤎','Chocolate Ganache'],['CUBE','기억의 조각','🫐','Brownie Cubes'],['TOPPING','여행의 리듬','✦','Berry Popping Candy']]
+  'cotton-candy':[['BASE','여행의 온도','☁️','Pink Cloud Base'],['CREAM','여행의 색','🩵','Blue Cloud Cream'],['CUBE','기억의 조각','⬜','Marshmallow Cubes'],['TOPPING','여행의 리듬','🌈','Rainbow Sprinkles']],
+  'lemon-cream':[['BASE','여행의 온도','🌅','Fresh Morning Base'],['CREAM','여행의 색','🤍','White chocolate cream'],['CUBE','기억의 조각','🧀','Cheesecake Cubes'],['TOPPING','여행의 리듬','🍋','Lemon Zest']],
+  'mango-soda':[['BASE','여행의 온도','☀️','Sun-Kissed Base'],['CREAM','여행의 색','🫧','Soda Cream'],['CUBE','기억의 조각','🥭','Mango Cubes'],['TOPPING','여행의 리듬','🍬','Popping Candy']],
+  'matcha-latte':[['BASE','여행의 온도','🌿','Mellow Base'],['CREAM','여행의 색','🍵','Matcha Cream'],['CUBE','기억의 조각','⬜','White Choco Cubes'],['TOPPING','여행의 리듬','🟤','Roasted Choco Pearls']],
+  'midnight-choco':[['BASE','여행의 온도','🌙','Deep Night Base'],['CREAM','여행의 색','🍫','Chocolate Ganache'],['CUBE','기억의 조각','🟫','Brownie Cubes'],['TOPPING','여행의 리듬','🟤','Crunchy chocolate balls']]
 };
 
 const legacyPlaces=[

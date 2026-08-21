@@ -1,5 +1,21 @@
 # Cookie:Ro Find Your Flavor v3.2
 
+## v3.2.5
+
+- Lemon Cream의 CUBE를 `Cheese Cubes`에서 `Cheesecake Cubes`로 변경
+- 재료 아이콘은 직관적인 치즈 모양 🧀로 유지
+
+## v3.2.4
+
+- 서비스 단계 화살표를 항목 내부의 가상 장식에서 독립된 그리드 칸으로 변경
+- 각 화살표를 Crumbs–Crumbook, Crumbook–Flavor, Flavor–Cookie Jar 사이 정중앙에 고정
+- Lemon Cream, Matcha Latte, Midnight Choco의 최신 최종 레시피명과 재료 이모지를 재반영
+
+## v3.2.3
+
+- 최종 재료명 목록을 다시 검증하고 그대로 유지
+- 각 재료의 색·형태·질감과 가장 가까운 이모지로 20개 아이콘을 전면 재매칭
+
 ## v3.2.2
 
 - 서비스 소개 카드 오른쪽 위 별 장식 제거
