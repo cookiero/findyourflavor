@@ -4,9 +4,10 @@ const schema={
     flavor:{type:'string',enum:['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco']},
     location_guess:{type:'string'},location_confidence:{type:'string',enum:['confirmed_by_user','supported_by_exif','visual_guess','unknown']},
     photo_mood:{type:'string'},scene_observation:{type:'string'},warm_observation:{type:'string'},why_this_flavor:{type:'string'},travel_style:{type:'string'},season_note:{type:'string'},local_food_question:{type:'string'},closing_message:{type:'string'},
+    base_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},cream_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},cube_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},topping_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},
     base_analysis:{type:'string'},cream_analysis:{type:'string'},cube_analysis:{type:'string'},topping_analysis:{type:'string'},final_bake:{type:'string'}
   },
-  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message','base_analysis','cream_analysis','cube_analysis','topping_analysis','final_bake']
+  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message','base_keywords','cream_keywords','cube_keywords','topping_keywords','base_analysis','cream_analysis','cube_analysis','topping_analysis','final_bake']
 };
 
 export default async function handler(req,res){
@@ -39,6 +40,8 @@ export default async function handler(req,res){
 - 인종, 건강, 종교, 성적 지향, 정치 성향 같은 민감한 특성을 추정하지 마세요.
 - Flavor는 이미 사진 픽셀의 고정 점수표로 ${selectedFlavor}로 확정되었습니다. 다른 Flavor를 고르거나 제안하지 말고 flavor 필드에도 반드시 정확히 ${selectedFlavor}를 쓰세요. 이후 모든 재료 분석은 이 Flavor의 고정 레시피만 사용하세요.
 - 사용자에게 보여주는 글에는 AI, 분석, EXIF, GPS, 좌표, 메타데이터 같은 기술 용어나 정보 출처를 쓰지 마세요.
+  - base_keywords, cream_keywords, cube_keywords, topping_keywords는 각각 긴 분석문을 3초 안에 훑어볼 수 있도록 요약하는 2~3개의 짧은 한국어 구절입니다. 각 구절은 공백 포함 2~10자, 문장부호·이모지·재료명 없이 작성하세요.
+  - 키워드는 해당 분석문의 실제 근거와 정확히 일치해야 하며 서로 같은 표현을 반복하지 마세요. BASE는 여행의 온도와 태도, CREAM은 빛·색·공기, CUBE는 기억에 남은 장면, TOPPING은 움직임·속도·여운을 요약하세요.
   - base_analysis, cream_analysis, cube_analysis, topping_analysis가 결과의 핵심입니다. 절대로 짧은 요약으로 쓰지 마세요. 각 필드는 공백 포함 220~700자, 4~6개의 자연스러운 한국어 문장으로 작성하세요.
   - 각 필드마다 반드시 ① 어느 사진에서 무엇이 보였는지 알 수 있을 정도의 구체적인 시각 근거 2개 이상 ② 그 빛·색·질감·구도·움직임에서 받은 느낌과 여행 방식에 대한 해석 ③ 왜 다른 재료가 아니라 해당 재료의 맛·색·질감과 연결했는지를 충분히 설명하세요.
   - “밝아서 레몬”, “어두워서 초콜릿”처럼 단순하게 연결하지 마세요. 예를 들어 어두운 사진이라면 젖은 바닥의 반사, 건물 재질, 창문의 불빛, 인물의 움직임처럼 서로 다른 근거가 어떻게 코코아의 쌉싸름함이나 가나슈의 온기로 번역되는지 설명하세요.

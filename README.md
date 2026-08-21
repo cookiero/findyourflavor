@@ -1,5 +1,13 @@
 # Cookie:Ro — Find the Flavor
 
+## v3.2 변경사항
+
+- BASE / CREAM / CUBE / TOPPING마다 2~3개의 핵심 키워드 요약을 추가하고 기존 상세 분석은 그대로 유지했습니다.
+- AI 구조화 출력, 로컬 fallback, 친구 공유 데이터, Cookie Jar 저장 데이터에 키워드 필드를 함께 반영했습니다.
+- 네 레이어의 대표 키워드를 한 줄로 모은 `A TASTE OF YOUR JOURNEY` 종합 요약을 추가했습니다.
+- 결과와 대기등록 사이에 `Crumbs → Crumbook → Flavor → Cookie Jar` 전체 서비스 소개를 추가했습니다.
+- 대기등록 문구와 CTA를 `YOUR FIRST COOKIE IS WAITING.` / `내 쿠키 담아두고 먼저 초대받기`로 개편했습니다.
+
 여행지와 여행 시기, 사진 1–2장으로 다섯 가지 Cookie:Ro Flavor 중 하나를 발견하고, 친구와 결과를 비교하는 모바일 중심 정적 웹사이트입니다.
 
 ## 실행하기
