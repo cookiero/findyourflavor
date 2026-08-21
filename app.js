@@ -7,11 +7,11 @@ const flavors = [
 ];
 
 const recipes={
-  'cotton-candy':[['BASE','여행의 온도','🍪','Vanilla Cookie Base'],['CREAM','여행의 색','☁️','Cotton Candy Cream'],['CUBE','기억의 조각','🩷','Pink Sugar'],['TOPPING','여행의 리듬','✦','Star Sprinkles']],
-  'lemon-cream':[['BASE','여행의 온도','🍋','Butter Cookie Base'],['CREAM','여행의 색','🥛','Lemon Cream'],['CUBE','기억의 조각','〰','Lemon Zest'],['TOPPING','여행의 리듬','✦','Sugar Crumb']],
-  'mango-soda':[['BASE','여행의 온도','🥭','Mango Cookie Base'],['CREAM','여행의 색','🫧','Soda Cream'],['CUBE','기억의 조각','🟨','Mango Cubes'],['TOPPING','여행의 리듬','✦','Popping Candy']],
-  'matcha-latte':[['BASE','여행의 온도','🍵','Matcha Cookie Base'],['CREAM','여행의 색','🥛','Milk Cream'],['CUBE','기억의 조각','🟢','Pistachio Crumb'],['TOPPING','여행의 리듬','🍃','Leaf Sugar']],
-  'midnight-choco':[['BASE','여행의 온도','🍫','Dark Cocoa Cookie Base'],['CREAM','여행의 색','🤎','Chocolate Ganache'],['CUBE','기억의 조각','🫐','Berry Crumb'],['TOPPING','여행의 리듬','✦','Salt Crystals']]
+  'cotton-candy':[['BASE','여행의 온도','🍪','Pink Cloud Base'],['CREAM','여행의 색','☁️','Blue Cloud Cream'],['CUBE','기억의 조각','🩷','Marshmallow Cubes'],['TOPPING','여행의 리듬','✦','Rainbow Sprinkles']],
+  'lemon-cream':[['BASE','여행의 온도','🍋','Fresh Morning Base'],['CREAM','여행의 색','🥛','Cream Glaze'],['CUBE','기억의 조각','〰','White Choco Cubes'],['TOPPING','여행의 리듬','✦','Lemon Zest']],
+  'mango-soda':[['BASE','여행의 온도','🥭','Sun-Kissed Base'],['CREAM','여행의 색','🫧','Soda Cream'],['CUBE','기억의 조각','🟨','Mango Cubes'],['TOPPING','여행의 리듬','✦','Popping Candy']],
+  'matcha-latte':[['BASE','여행의 온도','🍵','Mellow Base'],['CREAM','여행의 색','🥛','Latte Cream'],['CUBE','기억의 조각','🟢','White Choco Cubes'],['TOPPING','여행의 리듬','🍃','Roasted Choco Pearls']],
+  'midnight-choco':[['BASE','여행의 온도','🍫','Deep Night Base'],['CREAM','여행의 색','🤎','Chocolate Ganache'],['CUBE','기억의 조각','🫐','Brownie Cubes'],['TOPPING','여행의 리듬','✦','Berry Popping Candy']]
 };
 
 const legacyPlaces=[

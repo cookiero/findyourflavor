@@ -7,6 +7,7 @@
 - 네 레이어의 대표 키워드를 한 줄로 모은 `A TASTE OF YOUR JOURNEY` 종합 요약을 추가했습니다.
 - 결과와 대기등록 사이에 `Crumbs → Crumbook → Flavor → Cookie Jar` 전체 서비스 소개를 추가했습니다.
 - 대기등록 문구와 CTA를 `YOUR FIRST COOKIE IS WAITING.` / `내 쿠키 담아두고 먼저 초대받기`로 개편했습니다.
+- v3.2.1에서 다섯 Flavor의 네 가지 재료명을 최신 레시피로 교체하고 AI·로컬 fallback에 동일하게 반영했습니다.
 
 여행지와 여행 시기, 사진 1–2장으로 다섯 가지 Cookie:Ro Flavor 중 하나를 발견하고, 친구와 결과를 비교하는 모바일 중심 정적 웹사이트입니다.
 

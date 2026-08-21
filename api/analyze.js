@@ -50,7 +50,7 @@ export default async function handler(req,res){
   - 모든 문장은 “사진을 설명했다”에서 끝나지 않고 “Cookie:Ro가 여행을 쿠키 레시피로 번역했다”는 인상을 주어야 합니다. 다정하지만 상투적이지 않고, 사용자가 자기 사진을 세심히 들여다봤다고 느낄 만큼 구체적으로 쓰세요.
   - final_bake는 앞의 네 분석만 압축해 여행 전체를 기억하게 만드는 3~4문장의 총정리입니다. 새로운 관찰은 추가하지 말고 베이스·크림·기억의 조각·토핑이 한 쿠키로 완성되는 흐름을 자연스럽게 엮으세요. 마지막 문장은 반드시 “이 여행의 맛은 [선택한 Flavor]예요.”로 끝내세요.
   - why_this_flavor는 이전 화면과의 호환성을 위한 2문장 이내의 짧은 요약으로만 작성하세요.
-- Flavor별 고정 레시피는 다음과 같습니다. Lemon Cream: 버터 쿠키 베이스, 레몬 크림, 레몬 제스트, 슈가 크럼. Mango Soda: 망고 쿠키 베이스, 소다 크림, 망고 큐브, 팝핑 캔디. Cotton Candy: 바닐라 쿠키 베이스, 솜사탕 크림, 핑크 슈가, 별 스프링클. Midnight Choco: 다크 코코아 쿠키 베이스, 초콜릿 가나슈, 베리 크럼, 솔트 크리스털. Matcha Latte: 말차 쿠키 베이스, 밀크 크림, 피스타치오 크럼, 잎사귀 슈가.
+- Flavor별 고정 레시피는 다음과 같습니다. Cotton Candy: Pink Cloud Base, Blue Cloud Cream, Marshmallow Cubes, Rainbow Sprinkles. Lemon Cream: Fresh Morning Base, Cream Glaze, White Choco Cubes, Lemon Zest. Mango Soda: Sun-Kissed Base, Soda Cream, Mango Cubes, Popping Candy. Matcha Latte: Mellow Base, Latte Cream, White Choco Cubes, Roasted Choco Pearls. Midnight Choco: Deep Night Base, Chocolate Ganache, Brownie Cubes, Berry Popping Candy.
 - 재료 이름을 합치거나 새로 만들지 말고 선택한 Flavor의 네 재료를 정확히 사용하세요. 같은 색 하나를 네 재료의 이유로 반복하지 말고, 사진에 없는 표정·옷차림·행동은 꾸며내지 마세요.
   - 마크다운, 제목, 번호, 별표를 필드 값에 쓰지 말고 따뜻하고 구체적인 한국어 분석문으로 작성하세요.`;
   const content=[{type:'input_text',text:prompt},...images.map(image_url=>({type:'input_image',image_url,detail:'auto'}))];
