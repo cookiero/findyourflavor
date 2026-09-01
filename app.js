@@ -67,9 +67,13 @@ function getJourneyMemory(flow='main'){
   const section=document.querySelector(`[data-memory="${flow}"]`);if(!section)return{};
   const chosen=name=>section.querySelector(`input[name="${flow}-${name}"]:checked`)?.value||'';
   const field=name=>section.querySelector(`[data-memory-field="${name}"]`)?.value.trim()||'';
-  return{purpose:chosen('purpose'),purposeNote:field('purposeNote'),departureMood:chosen('departure'),departureNote:field('departureNote'),returnMood:chosen('return'),returnNote:field('returnNote'),photoMoods:[...section.querySelectorAll('[data-memory-check="photoMoods"]:checked')].map(input=>input.value).slice(0,2),photoMoodNote:field('photoMoodNote'),air:field('air'),wind:field('wind'),airWindNote:field('airWindNote'),answerVersion:2};
+  return{base:chosen('base'),baseNote:field('baseNote'),cream:chosen('cream'),creamNote:field('creamNote'),cube:chosen('cube'),cubeNote:field('cubeNote'),topping:chosen('topping'),toppingNote:field('toppingNote'),answerVersion:4};
 }
 initMemoryQuestions();
+function initLayerWizards(){
+  document.querySelectorAll('.layer-questions').forEach(section=>{const steps=[...section.querySelectorAll('[data-layer]')];if(!steps.length)return;let current=0;const nav=document.createElement('div');nav.className='layer-wizard-nav';nav.innerHTML='<div class="layer-wizard-progress"><i></i></div><span>1 / 4</span><button type="button">다음 레이어 →</button>';section.querySelector('.memory-privacy').before(nav);const render=()=>{steps.forEach((step,index)=>step.hidden=index!==current);nav.querySelector('i').style.width=`${(current+1)*25}%`;nav.querySelector('span').textContent=`${current+1} / ${steps.length}`;nav.querySelector('button').textContent=current===steps.length-1?'네 가지 재료 담기 ✓':'다음 레이어 →'};nav.querySelector('button').addEventListener('click',()=>{const step=steps[current],answered=step.querySelector('input:checked')||step.querySelector('textarea')?.value.trim();if(!answered){toast('하나를 고르거나 직접 이야기를 적어주세요.');return}if(current<steps.length-1){current++;render();step.scrollIntoView({behavior:'smooth',block:'center'})}else{section.classList.add('layers-complete');syncFindButton();document.getElementById('findButton')?.scrollIntoView({behavior:'smooth',block:'center'})}});render()});
+}
+initLayerWizards();
 
 function createCookieId(){return globalThis.crypto?.randomUUID?.()||`cookie_${Date.now()}_${Math.random().toString(36).slice(2,10)}`}
 
@@ -106,7 +110,7 @@ function previewFile(input,index,isFriend=false){
   else{photos[index]=file;syncFindButton()}
 }
 function previewBatch(input,isFriend=false){const files=[...(input.files||[])].filter(file=>file.type.startsWith('image/')).slice(0,3);if(!files.length)return;const selector=isFriend?'input[data-friend-slot]':'input[data-slot]',inputs=[...document.querySelectorAll(selector)],target=isFriend?friendPhotos:photos;target.length=0;files.forEach((file,index)=>{target[index]=file;const label=inputs[index].closest('.photo-slot'),img=label.querySelector('img');img.src=URL.createObjectURL(file);label.classList.add('has-image')});if(isFriend)syncFriendButton();else syncFindButton()}
-function syncFindButton(){const btn=document.getElementById('findButton');const ready=photos[0]&&document.getElementById('destinationInput').value.trim()&&document.getElementById('dateInput').value;btn.disabled=!ready;btn.textContent=ready?'Find my flavor →':'여행지·시기·사진을 알려 주세요'}
+function syncFindButton(){const btn=document.getElementById('findButton'),layers=document.querySelector('[data-memory="main"]');const ready=photos[0]&&document.getElementById('destinationInput').value.trim()&&document.getElementById('dateInput').value&&layers?.classList.contains('layers-complete');btn.disabled=!ready;btn.textContent=ready?'Find my flavor →':photos[0]?'네 가지 레이어를 완성해 주세요':'여행지·시기·사진을 알려 주세요'}
 function syncFriendButton(){const btn=document.getElementById('friendFindButton'),ready=friendPhotos[0]&&document.getElementById('friendDestinationInput').value.trim()&&document.getElementById('friendDateInput').value;btn.disabled=!ready;btn.textContent=ready?'내 Flavor 찾기 →':'여행지·시기·사진을 알려 주세요'}
 ['destinationInput','dateInput'].forEach(id=>document.getElementById(id).addEventListener('input',syncFindButton));
 ['friendDestinationInput','friendDateInput'].forEach(id=>document.getElementById(id).addEventListener('input',syncFriendButton));
@@ -121,12 +125,24 @@ async function fingerprint(file){
 function colorName([r,g,b]){const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,v=max/255,s=max?d/max:0;let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h=(h*60+360)%360}if(v<.2)return'깊은 먹빛';if(v>.9&&s<.12)return'맑은 크림빛';if(s<.16)return v>.68?'포근한 회백빛':'차분한 회갈빛';if(h<15||h>=345)return v>.72?'코랄 레드':'딥 레드';if(h<45)return v>.78?'햇살 오렌지':'따뜻한 브라운';if(h<70)return'골든 옐로';if(h<165)return s<.42?'세이지 그린':'싱그러운 그린';if(h<205)return'민트 블루';if(h<255)return v>.7?'하늘 블루':'딥 오션 블루';if(h<290)return'라벤더 퍼플';if(h<345)return'로지 핑크';return'여행의 색'}
 async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,180/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,out=[];for(let i=0;i<d.length;i+=16){if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
 async function analyzePhotoColors(files){let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>12000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/12000)===0);const picks=[.08,.34,.62,.9].map(q=>pixels[Math.min(pixels.length-1,Math.floor(pixels.length*q))].slice());let groups=[];for(let step=0;step<9;step++){groups=picks.map(()=>({sum:[0,0,0],n:0}));for(const p of pixels){let bi=0,bd=Infinity;picks.forEach((c,i)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(d<bd){bd=d;bi=i}});const g=groups[bi];g.sum[0]+=p[0];g.sum[1]+=p[1];g.sum[2]+=p[2];g.n++}groups.forEach((g,i)=>{if(g.n)picks[i]=g.sum.map(v=>Math.round(v/g.n))})}const total=groups.reduce((s,g)=>s+g.n,0);let result=groups.map((g,i)=>({rgb:picks[i],raw:g.n/total*100})).filter(x=>x.raw>.15).sort((a,b)=>b.raw-a.raw);const floors=result.map(x=>Math.floor(x.raw));let remaining=100-floors.reduce((a,b)=>a+b,0);for(let i=0;i<remaining;i++)floors[i%floors.length]++;return result.map((x,i)=>{const hex='#'+x.rgb.map(v=>v.toString(16).padStart(2,'0')).join('');return[colorName(x.rgb),hex,floors[i]]})}
-function deterministicFlavor(palette,hash){
+function deterministicFlavor(palette,hash,memory={}){
   if(!palette?.length)return flavors[hash%flavors.length];
   const scores=[0,0,0,0,0];
   palette.forEach(([,hex,percent])=>{const rgb=[1,3,5].map(index=>parseInt(hex.slice(index,index+2),16)/255),max=Math.max(...rgb),min=Math.min(...rgb),delta=max-min,s=max?delta/max:0,v=max;let h=0;if(delta){if(max===rgb[0])h=((rgb[1]-rgb[2])/delta)%6;else if(max===rgb[1])h=(rgb[2]-rgb[0])/delta+2;else h=(rgb[0]-rgb[1])/delta+4;h=(h*60+360)%360}const w=percent/100,pink=h>=315||h<10?1:0,yellow=h>=42&&h<75?1:0,orange=h>=10&&h<42?1:0,green=h>=75&&h<165?1:0,blue=h>=165&&h<265?1:0;scores[0]+=w*(1.1*pink+.55*blue+.5*v+.25*(1-s));scores[1]+=w*(1.2*yellow+.8*v+.35*(1-s));scores[2]+=w*(1.25*orange+.75*yellow+.65*s+.3*v);scores[3]+=w*(1.5*green+.55*(1-s)+.25*(1-v));scores[4]+=w*(1.65*(1-v)+.5*s+.35*blue)});
   scores.forEach((_,index)=>scores[index]+=((hash>>>(index*5))&31)/3100);
+  const choiceToFlavor={
+    '포근하고 다정한 온도':0,'맑고 산뜻한 온도':1,'생기 있고 뜨거운 온도':2,'차분하고 깊은 온도':3,
+    '부드러운 파스텔빛':0,'투명하고 밝은 빛':1,'선명하고 강한 색':2,'그윽하고 낮은 채도':4,
+    '사람과 함께한 순간':0,'처음 발견한 풍경':1,'맛과 촉감 같은 감각':2,'혼자 오래 머문 장면':3,
+    '천천히 머문 리듬':3,'계획대로 흐른 리듬':1,'즉흥적으로 튄 리듬':2,'밤까지 이어진 진한 리듬':4
+  };
+  ['base','cream','cube','topping'].forEach(layer=>{const value=memory.resolvedChoices?.[layer]||memory[layer],index=choiceToFlavor[value];if(Number.isInteger(index))scores[index]+=.34});
   return flavors[scores.indexOf(Math.max(...scores))];
+}
+async function resolveLayerAnswers(memory){
+  const notes=['base','cream','cube','topping'].filter(layer=>memory[`${layer}Note`]);
+  if(!notes.length||location.protocol==='file:')return memory;
+  try{const response=await fetch('/api/classify-layers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory})});if(!response.ok)return memory;const data=await response.json();return{...memory,resolvedChoices:data.matches||{},classificationSource:'ai'}}catch{return memory}
 }
 async function imageForAi(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,960/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.68))};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('사진을 읽지 못했어요.'))};img.src=url})}
 async function readPhotoExif(file){const fallback={file_name:file.name,file_modified:new Date(file.lastModified).toISOString()};if(!window.exifr)return fallback;try{const data=await window.exifr.parse(file,{tiff:true,exif:true,gps:true});return{...fallback,taken_at:data?.DateTimeOriginal||data?.CreateDate||null,latitude:Number.isFinite(data?.latitude)?data.latitude:null,longitude:Number.isFinite(data?.longitude)?data.longitude:null,camera:[data?.Make,data?.Model].filter(Boolean).join(' ')||null}}catch{return fallback}}
@@ -231,7 +247,7 @@ function renderTripLetter(flavor){
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');startBaking();
   const selected=photos.filter(Boolean),hash=await fingerprint(file);let flavor=flavors[hash%flavors.length];
-  if(!fromFriend){try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}flavor=deterministicFlavor(photoPalette,hash);const aiPromise=requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif,selectedFlavor:flavor.name,memory:getJourneyMemory('main')}).catch(()=>null);await runBakeSequence(flavor);aiInsight=await aiPromise}
+  if(!fromFriend){try{[photoPalette,photoExif]=await Promise.all([analyzePhotoColors(selected),Promise.all(selected.map(readPhotoExif))])}catch{photoPalette=null;photoExif=[]}const memory=await resolveLayerAnswers(getJourneyMemory('main'));flavor=deterministicFlavor(photoPalette,hash,memory);const aiPromise=requestAiAnalysis(selected,{destination:document.getElementById('destinationInput').value.trim(),date:document.getElementById('dateInput').value,palette:photoPalette,exif:photoExif,selectedFlavor:flavor.name,memory}).catch(()=>null);await runBakeSequence(flavor);aiInsight=await aiPromise}
   await finishBaking(flavor,()=>{if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result');trackEvent('flavor_completed',{flow:'original',flavor:flavor.id})}});
 }
 document.getElementById('findButton').addEventListener('click',()=>{currentCookieId=createCookieId();trackEvent('flavor_started',{flow:'original',photo_count:photos.filter(Boolean).length});prepareBakingAudio();beginFinding(photos[0])});
