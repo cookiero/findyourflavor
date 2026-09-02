@@ -17,7 +17,7 @@
 
 별도 설치가 필요 없습니다. `index.html`을 브라우저에서 열면 됩니다. 사진은 서버로 전송되지 않으며 브라우저 안에서만 Flavor 선택에 사용됩니다.
 
-Vercel에 배포하고 `OPENAI_API_KEY` 환경 변수를 설정하면 `/api/analyze`가 자동 활성화되어 실제 AI 이미지 분석을 사용합니다. API가 준비되지 않았거나 로컬 파일로 열면 브라우저 내 파일럿 분석으로 자동 전환됩니다.
+사진은 브라우저 안에서만 미리보기와 색상 참고에 사용되며 서버로 전송되지 않습니다. `OPENAI_API_KEY`는 사용자가 직접 쓴 문장을 Base, Cream, Cube, Topping 재료로 분류하는 `/api/classify-layers`에만 사용됩니다.
 
 ## GitHub Pages에 올리기
 
