@@ -51,3 +51,13 @@ p,li,small,label,button,h1,h2,h3,h4{word-break:keep-all;overflow-wrap:break-word
 @media(max-width:520px){.taste-summary-line{max-width:31em;margin-top:16px;font-size:15px;line-height:1.85;letter-spacing:-.02em}}
 .recipe-part:nth-child(4) .recipe-sticker{top:-54px;bottom:auto}
 @media(max-width:520px){.recipe-part:nth-child(4) .recipe-sticker{top:-44px}}
+.taste-summary-line.journey-narrative {
+  display: block;
+  max-width: 42rem;
+  margin-inline: auto;
+  white-space: pre-line;
+  font-weight: 500;
+  line-height: 1.9;
+  text-align: left;
+  word-break: keep-all;
+}
