@@ -137,6 +137,13 @@ async function fingerprint(file){
 function colorName([r,g,b]){const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,v=max/255,s=max?d/max:0;let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h=(h*60+360)%360}if(v<.2)return'깊은 먹빛';if(v>.9&&s<.12)return'맑은 크림빛';if(s<.16)return v>.68?'포근한 회백빛':'차분한 회갈빛';if(h<15||h>=345)return v>.72?'코랄 레드':'딥 레드';if(h<45)return v>.78?'햇살 오렌지':'따뜻한 브라운';if(h<70)return'골든 옐로';if(h<165)return s<.42?'세이지 그린':'싱그러운 그린';if(h<205)return'민트 블루';if(h<255)return v>.7?'하늘 블루':'딥 오션 블루';if(h<290)return'라벤더 퍼플';if(h<345)return'로지 핑크';return'여행의 색'}
 async function sampleImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const scale=Math.min(1,180/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h).data,out=[];for(let i=0;i<d.length;i+=16){if(d[i+3]>180)out.push([d[i],d[i+1],d[i+2]])}URL.revokeObjectURL(url);resolve(out)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image read failed'))};img.src=url})}
 async function analyzePhotoColors(files){let pixels=(await Promise.all(files.map(sampleImage))).flat();if(!pixels.length)return null;if(pixels.length>12000)pixels=pixels.filter((_,i)=>i%Math.ceil(pixels.length/12000)===0);const picks=[.08,.34,.62,.9].map(q=>pixels[Math.min(pixels.length-1,Math.floor(pixels.length*q))].slice());let groups=[];for(let step=0;step<9;step++){groups=picks.map(()=>({sum:[0,0,0],n:0}));for(const p of pixels){let bi=0,bd=Infinity;picks.forEach((c,i)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(d<bd){bd=d;bi=i}});const g=groups[bi];g.sum[0]+=p[0];g.sum[1]+=p[1];g.sum[2]+=p[2];g.n++}groups.forEach((g,i)=>{if(g.n)picks[i]=g.sum.map(v=>Math.round(v/g.n))})}const total=groups.reduce((s,g)=>s+g.n,0);let result=groups.map((g,i)=>({rgb:picks[i],raw:g.n/total*100})).filter(x=>x.raw>.15).sort((a,b)=>b.raw-a.raw);const floors=result.map(x=>Math.floor(x.raw));let remaining=100-floors.reduce((a,b)=>a+b,0);for(let i=0;i<remaining;i++)floors[i%floors.length]++;return result.map((x,i)=>{const hex='#'+x.rgb.map(v=>v.toString(16).padStart(2,'0')).join('');return[colorName(x.rgb),hex,floors[i]]})}
+function photoVisualSignals(palette){
+  if(!palette?.length)return null;
+  const colors=palette.slice(0,4).map(([name,hex,percent])=>{const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)),max=Math.max(...rgb),min=Math.min(...rgb);return{name,hex,percent,brightness:Math.round((.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2])/2.55),saturation:Math.round((max?((max-min)/max):0)*100)}});
+  const weighted=field=>Math.round(colors.reduce((sum,color)=>sum+color[field]*color.percent,0)/colors.reduce((sum,color)=>sum+color.percent,0));
+  const brightness=weighted('brightness'),saturation=weighted('saturation'),contrast=Math.max(...colors.map(color=>color.brightness))-Math.min(...colors.map(color=>color.brightness));
+  return{colors:colors.map(({name,hex,percent})=>({name,hex,percent})),brightness,saturation,contrast,brightnessLabel:brightness>=72?'밝고 가벼운 빛':brightness<=38?'깊고 낮은 빛':'부드러운 중간 밝기',saturationLabel:saturation>=55?'선명한 색감':saturation<=24?'차분한 색감':'은은한 색감',contrastLabel:contrast>=45?'또렷한 대비':contrast<=18?'잔잔한 대비':'부드러운 대비'};
+}
 function deterministicFlavor(palette,hash,memory={}){
   if(!palette?.length)return flavors[hash%flavors.length];
   const scores=[0,0,0,0,0];
@@ -157,21 +164,23 @@ const localAnswerMeaning={
   '사람과 함께한 순간':['함께한 기억','다정한 장면','나눈 시간'],'처음 발견한 풍경':['새로운 발견','처음 본 장면','남은 호기심'],'맛과 촉감 같은 감각':['감각의 기억','생생한 결','맛있는 순간'],'혼자 오래 머문 장면':['오래 머문 장면','조용한 기억','깊은 시선'],
   '천천히 머문 리듬':['느린 리듬','천천한 걸음','긴 여운'],'계획대로 흐른 리듬':['고른 리듬','차분한 흐름','단단한 여운'],'즉흥적으로 튄 리듬':['즉흥의 리듬','자유로운 전환','통통 튄 여운'],'밤까지 이어진 진한 리듬':['깊어진 리듬','이어진 시간','진한 여운']
 };
-function localLayerAnswers(memory){
-  const selected=chosenLayers(memory),keywords=Object.fromEntries(['base','cream','cube','topping'].map(layer=>[layer,localAnswerMeaning[memory[layer]]||['고른 마음','남은 감각','여행의 여운']]));
+function photoCreamChoice(signals,fallback){if(!signals)return fallback;const names=signals.colors.map(color=>color.name).join(' ');if(signals.brightness<=38)return'chocolate ganache';if(/그린/.test(names))return'matcha cream';if(/블루|민트/.test(names))return signals.saturation>=45?'soda cream':'blue cloud cream';if(signals.saturation<=24||signals.brightness>=78)return'white chocolate cream';return fallback}
+function localLayerAnswers(memory,visualSignals=null){
+  const selected=chosenLayers(memory);selected.cream=photoCreamChoice(visualSignals,selected.cream);const keywords=Object.fromEntries(['base','cream','cube','topping'].map(layer=>[layer,localAnswerMeaning[memory[layer]]||['고른 마음','남은 감각','여행의 여운']]));
+  if(visualSignals)keywords.cream=[visualSignals.colors[0]?.name||keywords.cream[0],visualSignals.brightnessLabel,visualSignals.contrastLabel];
   const noteHint=layer=>memory[`${layer}Note`]?' 직접 남겨준 이야기까지 더해져, 이 선택은 단순한 분위기보다 조금 더 개인적인 기억으로 느껴져요.':'';
   const reasons={
     base:`이번 여행의 시작에는 ${keywords.base[0]}가 먼저 놓였던 것 같아요.${noteHint('base')} 그래서 첫 온도를 ${selected.base}에 담았어요. 다음의 ${selected.cream}이 이 온도에 또 다른 색을 더해, 한 가지 인상으로만 머물지 않게 해줘요.`,
-    cream:`여행을 떠올릴 때는 ${keywords.cream[0]}와 ${keywords.cream[1]}가 분위기를 이어주는 것 같아요.${noteHint('cream')} 그래서 ${selected.base} 위에 ${selected.cream}을 골랐어요. 첫 온도를 감싸면서도 ${selected.cube}로 이어질 기억의 표정을 자연스럽게 열어주거든요.`,
+    cream:visualSignals?`업로드한 사진에서 실제로 읽힌 중심색은 ${visualSignals.colors.slice(0,3).map(color=>`${color.name} ${color.percent}%`).join(', ')}였어요. 전체적으로 ${visualSignals.brightnessLabel}과 ${visualSignals.saturationLabel}, ${visualSignals.contrastLabel}가 함께 보여요.${noteHint('cream')} 그래서 ${selected.base} 위에 ${selected.cream}을 골랐어요. 첫 온도를 감싸면서도 ${selected.cube}로 이어질 기억의 표정을 자연스럽게 열어주거든요.`:`여행을 떠올릴 때는 ${keywords.cream[0]}와 ${keywords.cream[1]}가 분위기를 이어주는 것 같아요.${noteHint('cream')} 그래서 ${selected.base} 위에 ${selected.cream}을 골랐어요. 첫 온도를 감싸면서도 ${selected.cube}로 이어질 기억의 표정을 자연스럽게 열어주거든요.`,
     cube:`오래 남은 쪽은 ${keywords.cube[0]}에 가까웠던 것 같아요.${noteHint('cube')} 그래서 기억의 조각에는 ${selected.cube}를 넣었어요. ${selected.cream} 안에서 하나씩 모습을 드러내고, 마지막 ${selected.topping}의 리듬까지 이어주는 기억으로 잘 어울려요.`,
     topping:`여행의 움직임은 ${keywords.topping[0]}로 남은 듯해요.${noteHint('topping')} 그래서 마지막에는 ${selected.topping}을 골랐어요. 앞에서 쌓인 온도와 색, 기억을 덮지 않으면서 이 여행만의 속도와 여운을 또렷하게 남겨주거든요.`
   };
-  const narrative=`이번 여행은 ${keywords.base[0]}에서 시작해 ${keywords.cream[0]} 속으로 자연스럽게 이어진 것 같아요. 그 안에서는 ${keywords.cube[0]}가 여행을 오래 기억하게 하는 중심이 되었고요. 모든 순간이 같은 속도로 흘렀다기보다 ${keywords.topping[0]}가 마지막 표정을 만들어준 듯해요. 처음의 마음과 돌아온 뒤의 여운이 조금 다르게 느껴진다면, 그 사이에 이번 여행만의 이야기가 차곡차곡 생겼기 때문일 거예요. 아마 시간이 지나도 한 장면보다 이 전체의 흐름이 먼저 떠오르지 않을까요?`;
+  const narrative=`이번 여행은 ${keywords.base[0]}에서 시작해 ${visualSignals?'사진에 남은 ':''}${keywords.cream[0]} 속으로 자연스럽게 이어진 것 같아요. 그 안에서는 ${keywords.cube[0]}가 여행을 오래 기억하게 하는 중심이 되었고요. 모든 순간이 같은 속도로 흘렀다기보다 ${keywords.topping[0]}가 마지막 표정을 만들어준 듯해요. 처음의 마음과 돌아온 뒤의 여운이 조금 다르게 느껴진다면, 그 사이에 이번 여행만의 이야기가 차곡차곡 생겼기 때문일 거예요. 아마 시간이 지나도 한 장면보다 이 전체의 흐름이 먼저 떠오르지 않을까요?`;
   return{...memory,resolvedChoices:selected,layerReasons:reasons,layerKeywords:keywords,journeyNarrative:narrative,journeyTagline:`${keywords.base[0]}로 시작해 ${keywords.topping[2]}으로 오래 남는 여행`,classificationSource:'local'};
 }
-async function resolveLayerAnswers(memory){
-  if(location.protocol==='file:')return localLayerAnswers(memory);
-  try{const response=await fetch('/api/classify-layers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory})});if(!response.ok)return localLayerAnswers(memory);const data=await response.json();return{...memory,resolvedChoices:data.matches||{},layerReasons:data.reasons||{},layerKeywords:data.keywords||{},journeyNarrative:data.narrative||'',journeyTagline:data.tagline||'',classificationSource:'ai'}}catch{return localLayerAnswers(memory)}
+async function resolveLayerAnswers(memory,visualSignals=null){
+  if(location.protocol==='file:')return localLayerAnswers(memory,visualSignals);
+  try{const response=await fetch('/api/classify-layers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memory,visualSignals})});if(!response.ok)return localLayerAnswers(memory,visualSignals);const data=await response.json();return{...memory,resolvedChoices:data.matches||{},layerReasons:data.reasons||{},layerKeywords:data.keywords||{},journeyNarrative:data.narrative||'',journeyTagline:data.tagline||'',photoSignals:visualSignals,classificationSource:'ai'}}catch{return localLayerAnswers(memory,visualSignals)}
 }
 function memoryAnalysis(memory=currentLayerMemory){
   if(!memory?.layerReasons)return null;
@@ -274,7 +283,7 @@ function renderTripLetter(flavor){
 async function beginFinding(file,fromFriend=false){
   showScreen('loading');startBaking();
   const selected=photos.filter(Boolean),hash=await fingerprint(file);let flavor=flavors[hash%flavors.length];
-  if(!fromFriend){try{photoPalette=await analyzePhotoColors(selected)}catch{photoPalette=null}currentLayerMemory=await resolveLayerAnswers(getJourneyMemory('main'));currentLayerStages=await buildLayerStages(currentLayerMemory);flavor=deterministicFlavor(photoPalette,hash);aiInsight=null;await runBakeSequence()}
+  if(!fromFriend){try{photoPalette=await analyzePhotoColors(selected)}catch{photoPalette=null}currentLayerMemory=await resolveLayerAnswers(getJourneyMemory('main'),photoVisualSignals(photoPalette));currentLayerStages=await buildLayerStages(currentLayerMemory);flavor=deterministicFlavor(photoPalette,hash,currentLayerMemory);aiInsight=null;await runBakeSequence()}
   await finishBaking(flavor,()=>{if(fromFriend)renderCompare(friendBase,flavor);else{renderResult(flavor);showScreen('result');trackEvent('flavor_completed',{flow:'original',flavor:flavor.id})}});
 }
 document.getElementById('findButton').addEventListener('click',()=>{currentCookieId=createCookieId();trackEvent('flavor_started',{flow:'original',photo_count:photos.filter(Boolean).length});prepareBakingAudio();beginFinding(photos[0])});
