@@ -9,6 +9,7 @@ const schema={
   },
   required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message','base_keywords','cream_keywords','cube_keywords','topping_keywords','base_analysis','cream_analysis','cube_analysis','topping_analysis','final_bake']
 };
+export const config={maxDuration:60};
 
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});

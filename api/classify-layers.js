@@ -4,6 +4,7 @@ const options={
   cube:['marshmellow cubes','cheese cubes','mango cubes','white chocolate cubes','brownie cubes'],
   topping:['rainbow sprinkles','lemon zest','popping candy','roasted choco pearls','crunchy chocolate balls']
 };
+export const config={maxDuration:60};
 const enumFields=Object.fromEntries(Object.entries(options).map(([key,values])=>[key,{type:'string',enum:values}]));
 const keywords=Object.fromEntries(Object.keys(options).map(key=>[key,{type:'array',items:{type:'string'},minItems:2,maxItems:3}]));
 const reasons=Object.fromEntries(Object.keys(options).map(key=>[key,{type:'string'}]));
