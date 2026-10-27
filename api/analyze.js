@@ -3,77 +3,47 @@ const schema={
   properties:{
     flavor:{type:'string',enum:['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco']},
     location_guess:{type:'string'},location_confidence:{type:'string',enum:['confirmed_by_user','supported_by_exif','visual_guess','unknown']},
-    photo_mood:{type:'string'},scene_observation:{type:'string'},warm_observation:{type:'string'},why_this_flavor:{type:'string'},travel_style:{type:'string'},season_note:{type:'string'},local_food_question:{type:'string'},closing_message:{type:'string'},
-    base_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},cream_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},cube_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},topping_keywords:{type:'array',items:{type:'string'},minItems:2,maxItems:3},
-    base_analysis:{type:'string'},cream_analysis:{type:'string'},cube_analysis:{type:'string'},topping_analysis:{type:'string'},final_bake:{type:'string'}
+    photo_mood:{type:'string'},scene_observation:{type:'string'},warm_observation:{type:'string'},why_this_flavor:{type:'string'},travel_style:{type:'string'},season_note:{type:'string'},local_food_question:{type:'string'},closing_message:{type:'string'}
   },
-  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message','base_keywords','cream_keywords','cube_keywords','topping_keywords','base_analysis','cream_analysis','cube_analysis','topping_analysis','final_bake']
+  required:['flavor','location_guess','location_confidence','photo_mood','scene_observation','warm_observation','why_this_flavor','travel_style','season_note','local_food_question','closing_message']
 };
-export const config={maxDuration:60};
 
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured'});
-  const {destination,date,palette,curated,selectedFlavor,memory}=req.body||{};
-  const allowedFlavors=['Cotton Candy','Lemon Cream','Mango Soda','Matcha Latte','Midnight Choco'];
-  if(!destination||!date||!allowedFlavors.includes(selectedFlavor)||!Array.isArray(palette)||!palette.length)return res.status(400).json({error:'Invalid request'});
-  const prompt=`당신은 Cookie:Ro의 다정한 여행 베이커입니다. 사용자 입력과 브라우저가 사진에서 계산한 색상 신호를 함께 살펴 여행을 쿠키의 네 레이어로 번역해 한국어로 답하세요. 심리검사 보고서가 아니라 여행에서 돌아온 친구와 사진을 같이 넘겨보며 건네는 말처럼 부드럽고 비단정적으로 쓰세요.
+  const {destination,date,images,palette,exif,curated}=req.body||{};
+  if(!destination||!date||!Array.isArray(images)||images.length<1||images.length>3)return res.status(400).json({error:'Invalid request'});
+  if(images.some(x=>typeof x!=='string'||x.length>4_000_000||!x.startsWith('data:image/')))return res.status(413).json({error:'Image is too large'});
+  const prompt=`당신은 Cookie:Ro의 따뜻하고 세심한 여행 사진 큐레이터입니다. 사용자 입력과 사진을 함께 분석해 한국어로 답하세요.
 
 사용자 입력 여행지: ${destination}
 여행 시기: ${date}
+사진 EXIF(없을 수 있음): ${JSON.stringify(exif||{})}
 브라우저가 실제 픽셀로 계산한 색상 비율: ${JSON.stringify(palette||[])}
 검수된 여행지 정보(있을 수 있음): ${JSON.stringify(curated||{})}
-사진 색상 점수표로 이미 확정된 Flavor: ${selectedFlavor}
-사용자가 직접 알려준 여행 기억(빈 값은 답하지 않은 항목): ${JSON.stringify(memory||{})}
 
 규칙:
-- 사진 원본은 제공되지 않습니다. 색상 비율에서 실제로 확인되는 대표색과 밝고 어두운 정도만 근거로 쓰고, 사진 속 사물·사람·장소·구도·활동·날씨를 추측하지 마세요.
-- 사용자의 자유서술을 따옴표로 인용하거나 어순만 바꿔 복창하지 마세요. 문장 뒤에 담긴 여행의 의미와 감정적 흐름을 소화해 자연스럽게 이야기하세요.
-- 객관식에서만 받은 정보는 그 선택이 허용하는 추상적인 해석까지만 사용하세요. 사용자나 사진이 제공하지 않은 사람·사건·장소·날씨·행동·감정을 만들어내지 마세요.
-- 사용자가 각 레이어에서 직접 고르거나 쓴 기억과 resolvedChoices는 그 사람의 확정된 입력입니다. BASE·CUBE·TOPPING은 해당 사용자 답만 해석하고 색상 신호와 연결하지 마세요. 색상 신호는 CREAM에서만 사용할 수 있습니다.
-- BASE에는 base와 baseNote, CREAM에는 cream과 creamNote, CUBE에는 cube와 cubeNote, TOPPING에는 topping과 toppingNote를 우선 활용하세요. resolvedChoices가 있으면 자유서술을 네 선택지 중 가장 가까운 결로 분류한 결과이므로 해당 레이어 해석에 함께 반영하세요.
+- 사진에서 실제로 보이는 장면, 빛, 구도, 활동만 근거로 쓰고 보이지 않는 사실은 꾸며내지 마세요.
 - 행복이나 감정은 단정하지 말고 '편안해 보여요', '즐거운 분위기가 느껴져요'처럼 조심스럽게 표현하세요.
-- 여행지는 사용자가 직접 입력한 정보로만 다루고 location_confidence는 confirmed_by_user로 쓰세요.
+- GPS가 없으면 장소를 확정하지 마세요. 사용자 입력은 confirmed_by_user, EXIF GPS는 supported_by_exif, 시각 추정은 visual_guess로 구분하세요.
 - 계절은 여행지의 실제 기후와 입력 월을 기준으로 쓰세요. 북반구 기준 표현을 열대·남반구에 적용하지 마세요.
 - 검수된 여행지 정보가 있으면 음식과 풍경에 우선 활용하세요. 없으면 필요할 때 웹 검색을 사용하되 불확실한 사실을 만들지 마세요.
 - local_food_question은 그 지역의 구체적인 대표 음식 이름을 넣어 사람에게 다정하게 묻는 한두 문장이어야 합니다.
 - 사진 픽셀 색상 비율은 이미 계산되었으므로 새 비율을 추측하지 마세요.
-- photo_mood, scene_observation, warm_observation, why_this_flavor는 이전 화면 호환용입니다. 사진 속 장면을 본 것처럼 쓰지 말고, 제공된 전체 색상 비율에서 확인되는 인상만 짧고 비단정적으로 쓰세요.
 - 인종, 건강, 종교, 성적 지향, 정치 성향 같은 민감한 특성을 추정하지 마세요.
-- Flavor는 이미 사진 픽셀의 고정 점수표로 ${selectedFlavor}로 확정되었습니다. 다른 Flavor를 고르거나 제안하지 말고 flavor 필드에도 반드시 정확히 ${selectedFlavor}를 쓰세요. 이후 모든 재료 분석은 이 Flavor의 고정 레시피만 사용하세요.
+- 다섯 Flavor 중 사진과 여행의 분위기에 가장 잘 맞는 하나를 고르세요.
 - 사용자에게 보여주는 글에는 AI, 분석, EXIF, GPS, 좌표, 메타데이터 같은 기술 용어나 정보 출처를 쓰지 마세요.
-  - 먼저 내부적으로만 각 레이어에 대해 '사용자가 준 근거 → 그 근거에서 읽히는 여행의 성격 → 재료로 번역할 이유 → 인접 레이어와의 관계'를 정리한 뒤 최종 문장을 쓰세요. 이 내부 정리는 출력하지 마세요.
-  - 주관식이 있는 경우: 원문의 사건을 보고하듯 요약하지 말고, 그 사건이 왜 좋은 기억으로 남았는지·여행에서 무엇이 중요했던 것 같은지를 한 단계 해석하세요. 원문에 있던 독특한 표현이나 5글자 이상의 구절을 그대로 재사용하지 마세요. 따옴표, 겹낫표, '~라고 적어주셨네요', '~라고 했어요', '~군요'를 쓰지 마세요.
-  - 주관식이 없는 경우: 객관식 선택의 의미를 반드시 첫 1~2문장에서 풀어주세요. 이어서 '그래서 여행의 첫 온도는 [재료]로 골랐어요', '그래서 여행의 색에는 [재료]를 얹었어요', '그래서 기억의 조각에는 [재료]를 골랐어요', '그래서 마지막 리듬은 [재료]로 마무리했어요'처럼 왜 이 재료가 되었는지를 명시하세요.
-  - 사용자가 말하지 않은 구체적 에피소드로 객관식 선택을 장식하지 마세요. 예를 들어 '느긋함'만 받았다면 햇살 아래 걸었다거나 친구와 웃었다고 만들지 말고, 많이 해내기보다 편하게 머무는 감각이 중요했던 여행처럼 느껴진다고 해석하세요.
-  - 모든 레이어에서 재료의 맛·색·식감을 설명하는 문장은 최대 2문장으로 제한하세요. 글의 중심은 재료 자체가 아니라 사용자의 여행이어야 합니다.
-  - 영어 재료명 뒤에 한국어 조사 '을/를/으로/로'를 직접 붙이지 마세요. '그래서 여행의 첫 온도로 고른 재료는 Sun-Kissed Base예요', '마지막 리듬으로 고른 재료는 Popping Candy예요'처럼 조사 오류가 생기지 않는 문장으로 쓰세요.
-  - base_keywords는 base/baseNote에서만, cube_keywords는 cube/cubeNote에서만, topping_keywords는 topping/toppingNote에서만 만드세요. cream_keywords만 cream/creamNote와 색상 신호를 함께 사용하세요. 각 필드는 2~3개의 짧은 한국어 구절이며 각 구절은 공백 포함 2~10자, 문장부호·이모지·재료명 없이 작성하세요. 재료마다 정해진 고정 키워드를 반복하지 마세요.
-  - 키워드는 해당 분석문의 실제 근거와 정확히 일치해야 하며 서로 같은 표현을 반복하지 마세요. BASE는 여행의 온도와 태도, CREAM은 빛·색·공기, CUBE는 기억에 남은 장면, TOPPING은 움직임·속도·여운을 요약하세요.
-  - base_analysis, cream_analysis, cube_analysis, topping_analysis가 결과의 핵심입니다. 각 필드는 공백 포함 240~620자, 5~7개의 자연스러운 한국어 문장으로 작성하세요. 첫 2~3문장은 여행 해석, 다음 1~2문장은 재료 선택 이유, 마지막 1~2문장은 인접 레이어와의 관계로 구성하세요.
-  - 각 필드는 반드시 ① 해당 사용자 응답에서 읽은 여행의 성격 ② 왜 그 성격을 해당 재료로 옮겼는지 ③ 앞뒤 레이어와 만났을 때 어떤 역할을 하는지를 자연스럽게 이어 쓰세요. 오직 CREAM에서만 대표색과 비율을 시각 근거로 추가하세요.
-  - CREAM에서도 “밝아서 레몬”, “어두워서 초콜릿”처럼 단순하게 연결하지 말고 여러 대표색의 비율과 서로의 대비가 어떻게 크림의 인상으로 이어지는지 설명하세요. 사진 원본이 없으므로 사물이나 장면을 예로 만들지 마세요.
-  - 색상 비율은 업로드한 사진 전체를 합쳐 계산한 값입니다. 특정 사진이나 장면을 보았다고 말하지 말고 전체 색감의 반복과 대비만 이야기하세요.
-  - base_analysis는 base/baseNote만 사용해 여행의 정서적 온도를 해석하고 왜 이 BASE인지 설명한 뒤 다음 CREAM이 더하는 역할로 이어가세요. 선택한 Flavor의 정확한 BASE 재료명을 반드시 쓰세요. 색 이름, 색 비율, 밝기, 사진을 언급하지 마세요.
-  - cream_analysis는 브라우저가 계산한 대표색·비율과 cream/creamNote를 함께 해석하고 왜 이 CREAM인지 설명한 뒤 앞 BASE와 뒤 CUBE 사이를 어떻게 잇는지 이야기하세요. 선택한 Flavor의 정확한 CREAM 재료명을 반드시 쓰세요. 대표색은 상위 2~3개만 자연스럽게 사용하고 숫자를 기계적으로 전부 나열하지 마세요.
-  - cube_analysis는 cube/cubeNote만 사용해 기억이 남은 방식을 해석하고 왜 이 CUBE인지 설명한 뒤 CREAM 안에서 어떤 기억의 조각으로 드러나 TOPPING으로 이어지는지 이야기하세요. 선택한 Flavor의 정확한 CUBE 재료명을 반드시 쓰세요. 색 이름, 색 비율, 밝기, 사진을 언급하지 마세요.
-  - topping_analysis는 topping/toppingNote만 사용해 여행의 속도와 움직임을 해석하고 왜 이 TOPPING인지 설명한 뒤 앞 세 레이어에 남기는 마지막 리듬과 여운으로 마무리하세요. 선택한 Flavor의 정확한 TOPPING 재료명을 반드시 쓰세요. 색 이름, 색 비율, 밝기, 사진을 언급하지 마세요.
-  - 모든 문장은 색상 설명에서 끝나지 않고 “Cookie:Ro가 여행을 쿠키 레시피로 번역했다”는 인상을 주어야 합니다. 다정하지만 상투적이지 않게 쓰세요.
-  - final_bake는 네 재료나 앞의 분석을 다시 요약하는 곳이 아닙니다. 여행의 시작 → 그 안에서 생긴 변화나 대비 → 기억으로 남은 방식 → 돌아본 뒤의 여운을 하나의 이야기로 엮어 6~9문장으로 쓰세요. CREAM에서 얻은 색을 전체 여행의 근거처럼 확장하지 말고, 색 이름이나 비율도 반복하지 마세요. 재료명은 최대 2개까지만 비유로 사용할 수 있습니다. 마지막 두 문장은 사용자의 여행을 단정하지 않고 다정하게 되묻거나 여운을 건네는 말로 끝내세요.
-  - “~을 선택하셨기 때문에”, “응답을 분석한 결과”, “~한 특성을 나타냅니다”, “~을 의미합니다” 같은 보고서 말투를 쓰지 마세요.
-  - why_this_flavor는 이전 화면과의 호환성을 위한 2문장 이내의 짧은 요약으로만 작성하세요. 사용자의 네 답과 CREAM에만 적용한 색상 신호가 함께 이 Flavor로 이어졌다고 설명하되 구체적 사건을 만들지 마세요.
-- Flavor별 고정 레시피는 다음과 같습니다. Cotton Candy: Pink Cloud Base, Blue Cloud Cream, Marshmallow Cubes, Rainbow Sprinkles. Lemon Cream: Fresh Morning Base, White chocolate cream, Cheesecake Cubes, Lemon Zest. Mango Soda: Sun-Kissed Base, Soda Cream, Mango Cubes, Popping Candy. Matcha Latte: Mellow Base, Matcha Cream, White Choco Cubes, Roasted Choco Pearls. Midnight Choco: Deep Night Base, Chocolate Ganache, Brownie Cubes, Crunchy chocolate balls.
+- why_this_flavor는 결과의 핵심입니다. 사진 여러 장을 관통하는 감정과 실제 장면을 충분히 짚은 뒤, 선택한 Flavor의 베이스·크림·첫 토핑·두 번째 토핑을 각각 별도의 긴 문단으로 설명하고 마지막에 여행의 기억을 다정하게 맺으세요. 사실 나열보다 장면의 온도·질감·움직임이 왜 그 재료와 닮았는지를 깊게 설명하세요.
+- Flavor별 고정 레시피는 다음과 같습니다. Lemon Cream: 버터 쿠키 베이스, 레몬 크림, 레몬 제스트, 슈가 크럼. Mango Soda: 망고 쿠키 베이스, 소다 크림, 망고 큐브, 팝핑 캔디. Cotton Candy: 바닐라 쿠키 베이스, 솜사탕 크림, 핑크 슈가, 별 스프링클. Midnight Choco: 다크 코코아 쿠키 베이스, 초콜릿 가나슈, 베리 크럼, 솔트 크리스털. Matcha Latte: 말차 쿠키 베이스, 밀크 크림, 피스타치오 크럼, 잎사귀 슈가.
 - 재료 이름을 합치거나 새로 만들지 말고 선택한 Flavor의 네 재료를 정확히 사용하세요. 같은 색 하나를 네 재료의 이유로 반복하지 말고, 사진에 없는 표정·옷차림·행동은 꾸며내지 마세요.
-  - 좋은 결과의 기준: 사용자가 '내가 쓴 말을 다시 읽어주는 게 아니라, 내 여행을 듣고 자기 방식으로 이해해줬다'고 느껴야 합니다. '당신은 이런 유형'이 아니라 '네가 들려준 여행을 이렇게 구워봤어요'라는 태도를 유지하세요.
-  - 마크다운, 제목, 번호, 별표를 필드 값에 쓰지 말고 따뜻하고 구체적인 한국어 분석문으로 작성하세요.`;
-  const content=[{type:'input_text',text:prompt}];
+- 마크다운과 별표를 쓰지 말고, 빈 줄로 문단을 나눈 따뜻한 한국어 편지로 작성하세요.`;
+  const content=[{type:'input_text',text:prompt},...images.map(image_url=>({type:'input_image',image_url,detail:'auto'}))];
   try{
-    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,input:[{role:'user',content}],text:{format:{type:'json_schema',name:'cookiero_travel_analysis',strict:true,schema}}})});
+    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,input:[{role:'user',content}],tools:[{type:'web_search'}],text:{format:{type:'json_schema',name:'cookiero_travel_analysis',strict:true,schema}}})});
     const data=await response.json();
     if(!response.ok)return res.status(response.status).json({error:'AI analysis failed',detail:data?.error?.message||'Unknown error'});
     const text=data.output?.flatMap(x=>x.content||[]).find(x=>x.type==='output_text')?.text;
     if(!text)throw new Error('No structured output');
-    const analysis=JSON.parse(text);analysis.flavor=selectedFlavor;
-    return res.status(200).json({analysis});
+    return res.status(200).json({analysis:JSON.parse(text)});
   }catch(error){return res.status(500).json({error:'Analysis unavailable',detail:error.message});}
 }
