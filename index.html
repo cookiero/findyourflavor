@@ -1,29 +1,281 @@
 <!doctype html>
-<html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff8ec">
-<meta name="description" content="여행의 감정, 빛깔, 기억과 리듬으로 굽는 Cookie:Ro Travel Cookie"><title>Cookie:Ro — Bake Your Trip</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=7"><link rel="stylesheet" href="mvp.css?v=1">
-</head><body>
-<div class="grain" aria-hidden="true"></div><img class="decor decor-sprinkles" src="assets/sprinkles.png" alt=""><img class="decor decor-crumbs" src="assets/crumbs.png" alt="">
-<main class="app-shell"><header class="topbar"><button class="brand-button" id="homeButton" aria-label="처음으로"><img src="assets/lettering-logo.png" alt="Cookie:Ro"></button><div class="flow-progress" aria-label="진행률"><span id="progressLabel">WELCOME</span><i><b id="progressBar"></b></i></div></header>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#FFF8EC">
+  <meta name="description" content="여행 사진으로 발견하는 나의 Cookie:Ro Flavor">
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <title>Cookie:Ro — Find the Flavor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="enhancements.css?v=17">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <img class="decor decor-sprinkles" src="assets/sprinkles.png" alt="">
+  <img class="decor decor-crumbs" src="assets/crumbs.png" alt="">
 
-<section class="screen active" id="home"><div class="hero-copy stagger"><span class="eyebrow">YOUR TRIP, BAKED.</span><h1>기억을 고르면,<br><em>여행의 맛</em>이 보여요.</h1><p>감정과 빛깔, 오래 남은 한 장면과 여행의 리듬을<br>네 겹의 Cookie:Ro Recipe로 구워보세요.</p></div><button class="hero-object" data-next="setup" aria-label="여행 쿠키 만들기 시작"><img src="assets/cookie-ring.png" alt="Cookie:Ro 쿠키링"><span class="stamp">4<br><small>LAYERS</small></span><span class="tap-cue">MAKE MY COOKIE <b>→</b></span></button></section>
+  <main class="app-shell">
+    <header class="topbar">
+      <button class="brand-button" data-go="home" aria-label="처음으로">
+        <img src="assets/lettering-logo.png" alt="Cookie:Ro">
+      </button>
+      <div class="progress-dots" aria-label="진행 단계">
+        <i class="active"></i><i></i><i></i><i></i>
+      </div>
+    </header>
 
-<section class="screen" id="setup"><button class="back-button" data-back="home">← Back</button><div class="section-heading"><span class="eyebrow">01 · BUILD YOUR CRUMBOOK</span><h2>어떤 여행을<br>구워볼까요?</h2><p>여행 정보와 대표 순간을 최대 8장 골라주세요.</p></div><div class="trip-fields"><label><span>어디에 다녀왔나요?</span><input id="destination" type="text" placeholder="예: 제주, 교토, 파리" maxlength="40"></label><label><span>언제 다녀왔나요?</span><input id="tripDate" type="month"></label></div><label class="photo-drop" id="photoDrop"><input id="photoInput" type="file" accept="image/*" multiple><span>＋</span><strong>여행 사진 2–8장 고르기</strong><small>사진은 분석 서버로 전송되지 않아요.</small></label><div class="crumbook-grid" id="crumbookGrid"></div><button class="primary-button" id="setupNext" disabled>사진을 2장 이상 골라주세요</button></section>
+    <section class="screen active" id="home" data-step="0">
+      <div class="hero-copy stagger">
+        <span class="eyebrow">A TASTE OF YOUR JOURNEY</span>
+        <h1>여행에는 저마다의<br><em>맛</em>이 있으니까.</h1>
+        <p>사진 1–3장을 골라 주세요.<br>그날의 온도와 리듬을 쿠키로 구워드릴게요.</p>
+      </div>
+      <button class="hero-object" data-go="upload" aria-label="쿠키를 눌러 Find my flavor 시작하기">
+        <svg class="orbit-copy" viewBox="0 0 400 400" aria-hidden="true">
+          <defs><path id="flavorArcTop" d="M 38 174 Q 200 12 362 174"></path><path id="flavorArcBottom" d="M 38 232 Q 200 390 362 232"></path></defs>
+          <text class="orbit-text orbit-text-top"><textPath href="#flavorArcTop" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+          <text class="orbit-text orbit-text-bottom"><textPath href="#flavorArcBottom" startOffset="50%" text-anchor="middle">FIND YOUR FLAVOR ·</textPath></text>
+        </svg>
+        <img src="assets/cookie-ring.png" alt="">
+        <span class="stamp">5<br><small>FLAVORS</small></span>
+        <span class="tap-cue">쿠키를 눌러 시작해요 <b>→</b></span>
+      </button>
+      <button class="text-button" data-go="flavors">먼저 Flavor 구경하기</button>
+    </section>
 
-<section class="screen question-screen" id="base"><button class="back-button" data-back="setup">← Back</button><div class="layer-heading"><span>02 · BASE</span><h2>How did it feel?</h2><p>여행의 감정을 떠올려 주세요.</p></div><fieldset class="question-card" data-question="baseQ1"><legend>이번 여행을 다시 떠올렸을 때 가장 가까운 느낌은?</legend></fieldset><fieldset class="question-card" data-question="baseQ2"><legend>가장 기억에 남는 순간이 특별한 이유는?</legend></fieldset><button class="primary-button" data-validate="base" disabled>다음 · 여행의 빛깔 →</button></section>
+    <section class="screen" id="upload" data-step="1">
+      <button class="back-button" data-go="home">← Back</button>
+      <div class="section-heading">
+        <span class="eyebrow">YOUR CRUMBS, YOUR FLAVOR</span>
+        <h2>어떤 여행이었나요?</h2>
+        <p>얼굴이 선명하지 않아도 괜찮아요.<br>풍경, 음식, 뒷모습까지 모두 재료가 돼요.</p>
+      </div>
+      <div class="trip-fields" aria-label="여행 정보">
+        <label><span>어디에 다녀왔나요?</span><input id="destinationInput" type="text" placeholder="예: 제주, 교토, 로스앤젤레스" autocomplete="off" maxlength="40" list="destinationList"><datalist id="destinationList"></datalist></label>
+        <label><span>언제 다녀왔나요?</span><input id="dateInput" type="month"></label>
+      </div>
+      <div class="upload-grid" id="uploadGrid">
+        <label class="photo-slot">
+          <input type="file" accept="image/*" data-slot="0" multiple>
+          <span class="plus">＋</span><strong>첫 번째 장면</strong><small>사진 1~3장 한 번에 선택 가능</small>
+          <img alt="첫 번째 여행 사진 미리보기">
+        </label>
+        <label class="photo-slot optional">
+          <input type="file" accept="image/*" data-slot="1">
+          <span class="plus">＋</span><strong>두 번째 장면</strong><small>선택 사항</small>
+          <img alt="두 번째 여행 사진 미리보기">
+        </label>
+        <label class="photo-slot optional"><input type="file" accept="image/*" data-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>선택 사항</small><img alt="세 번째 여행 사진 미리보기"></label>
+      </div>
+      <section class="memory-questions layer-questions" data-memory="main" aria-labelledby="memoryTitle">
+        <header><span class="eyebrow">BUILD YOUR THREE LAYERS</span><h3 id="memoryTitle">여행의 기억을<br>세 겹으로 구워볼까요?</h3><p>BASE를 먼저 고른 뒤, 기억과 감각의 의미 코드에 맞는 전용 CREAM과 TOPPING을 조합해요.</p></header>
+        <fieldset data-layer="base"><span class="layer-tag">01 · BASE</span><legend>여행 전체를 감싼 기본 온도는 어땠나요?</legend><div class="choice-chips"><label><input type="radio" name="main-base" value="BUTTER"><span>익숙하고 편안했어요</span></label><label><input type="radio" name="main-base" value="PINK"><span>포근하고 다정했어요</span></label><label><input type="radio" name="main-base" value="SUN"><span>따뜻하고 생기 있었어요</span></label><label><input type="radio" name="main-base" value="MELLOW"><span>차분하고 느긋했어요</span></label><label><input type="radio" name="main-base" value="NIGHT"><span>짙고 몰입감 있었어요</span></label></div><textarea data-memory-field="baseNote" maxlength="240" placeholder="예: 익숙한 사람들과 힘을 빼고 편하게 웃을 수 있었어요"></textarea></fieldset>
+        <fieldset data-layer="cream"><span class="layer-tag">02 · CREAM</span><legend>가장 기억에 남은 순간과 돌아온 뒤의 잔상은?</legend><div class="choice-chips"><label><input type="radio" name="main-cream" value="TOGETHER"><span>함께한 시간이 남았어요</span></label><label><input type="radio" name="main-cream" value="DISCOVERY"><span>예상 밖의 순간이 남았어요</span></label><label><input type="radio" name="main-cream" value="SCENE"><span>하나의 장면이 또렷해요</span></label><label><input type="radio" name="main-cream" value="STILL"><span>조용히 오래 머문 순간이에요</span></label><label><input type="radio" name="main-cream" value="AFTERGLOW"><span>돌아온 뒤 감정이 더 깊어졌어요</span></label></div><textarea data-memory-field="creamNote" maxlength="240" placeholder="예: 돌아온 뒤에도 친구와 나눈 조용한 대화가 계속 생각나요"></textarea></fieldset>
+        <fieldset data-layer="topping"><span class="layer-tag">03 · TOPPING</span><legend>여행에서 느껴진 감각과 움직임은?</legend><div class="choice-chips"><label><input type="radio" name="main-topping" value="SOFT"><span>부드럽고 편안했어요</span></label><label><input type="radio" name="main-topping" value="CRISP"><span>가볍고 또렷했어요</span></label><label><input type="radio" name="main-topping" value="PLAYFUL"><span>통통 튀고 즉흥적이었어요</span></label><label><input type="radio" name="main-topping" value="SLOW"><span>천천히 고르게 이어졌어요</span></label><label><input type="radio" name="main-topping" value="INTENSE"><span>강렬하고 오래 남았어요</span></label></div><textarea data-memory-field="toppingNote" maxlength="240" placeholder="예: 계획 없이 움직였지만 작은 발견이 계속 이어져 경쾌했어요"></textarea></fieldset>
+        <p class="memory-privacy">객관식과 직접 쓴 문장이 함께 있으면 직접 쓴 이야기를 우선해 결을 판단해요. 민감한 개인정보는 적지 말아주세요.</p>
+      </section>
+      <p class="privacy-note">로컬 모드에서는 사진이 기기 밖으로 나가지 않아요. AI 모드에서는 분석을 위해서만 안전한 서버로 전송돼요.</p>
+      <button class="primary-button" id="findButton" disabled>사진을 먼저 골라 주세요</button>
+    </section>
 
-<section class="screen question-screen" id="cream"><button class="back-button" data-back="base">← Back</button><div class="layer-heading"><span>03 · CREAM</span><h2>How did it look?</h2><p>대표사진과 여행의 빛깔을 골라 주세요.</p></div><article class="selection-block"><span class="block-kicker">A · REPRESENTATIVE PHOTO</span><h3>이번 여행을 한 장으로 남긴다면?</h3><div class="representative-grid" id="representativeGrid"></div></article><fieldset class="question-card palette-question" data-question="creamColor"><legend>이 여행을 떠올렸을 때 가장 가까운 빛깔은?</legend></fieldset><button class="primary-button" data-validate="cream" disabled>다음 · 기억의 조각 →</button></section>
+    <section class="screen loading-screen" id="loading" data-step="2" aria-live="polite">
+      <div class="baking-stage" id="bakingStage" data-phase="dough">
+        <div class="oven-glow" aria-hidden="true"></div>
+        <img class="baking-cookie" id="bakingCookie" src="assets/cookie-ring.png" alt="천천히 구워지고 있는 Cookie:Ro 쿠키">
+        <img class="baking-crumbs" id="bakingCrumbs" alt="" aria-hidden="true">
+        <img class="paw-imprint" src="assets/bake/쿠키로 발자국.png" alt="" aria-hidden="true">
+        <img class="paw-stamp" id="pawStamp" src="assets/bake/stamp.png" alt="" aria-hidden="true">
+        <span class="baking-spark spark-one" aria-hidden="true">✦</span><span class="baking-spark spark-two" aria-hidden="true">✦</span>
+        <div class="loading-jar" aria-hidden="true"><img src="assets/cookie-jar.png" alt=""></div>
+        <span class="bake-sound" aria-hidden="true"></span>
+      </div>
+      <span class="eyebrow">BAKING YOUR MOMENT</span>
+      <h2 id="loadingTitle">여행을 쿠키로 굽는 중<span class="loading-dots"></span></h2>
+      <p id="loadingText">사진에서 여행의 재료를 찾는 중...</p>
+    </section>
 
-<section class="screen" id="memory"><button class="back-button" data-back="cream">← Back</button><div class="layer-heading"><span>04 · MEMORY SELECTION</span><h2>Which one feels<br>more like this trip?</h2><p>두 장씩 비교하며 가장 오래 남은 기억을 찾아보세요.</p></div><div class="round-status"><span id="roundLabel">ROUND 1</span><b id="roundCount">8 → 4</b></div><div class="memory-duel" id="memoryDuel"></div><section class="memory-note" id="memoryNote" hidden><span class="eyebrow">+ 이 순간에 기억 남기기</span><h3>이 사진을 보니까 뭐가 떠오르나요?</h3><div class="category-grid" id="categoryGrid"></div><textarea id="memoryComment" rows="3" placeholder="예: 여기서 길을 잃었는데 그게 제일 재밌었음ㅋㅋ (선택)"></textarea><button class="primary-button" id="saveMemory">기억 저장하고 계속하기 →</button></section></section>
+    <section class="screen result-screen" id="result" data-step="3">
+      <button class="back-button" data-go="upload">← Try again</button>
+      <div class="result-intro">
+        <span class="eyebrow">YOUR TRAVEL FLAVOR IS</span>
+        <span class="analysis-mode" id="analysisMode">PHOTO ANALYSIS</span>
+        <div class="trip-postmark" id="tripPostmark">YOUR JOURNEY</div>
+        <h2 id="resultName">Mango Soda</h2>
+        <p class="flavor-note" id="resultTagline">햇살을 발견하면 망설임 없이 뛰어드는 맛</p>
+      </div>
+      <div class="result-cookie-wrap">
+        <span class="flavor-number" id="flavorNumber">03 / 05</span>
+        <span class="halo"></span>
+        <img id="resultCookie" src="assets/mango-soda.png" alt="Mango Soda Cookie">
+      </div>
+      <section class="journey-photos" aria-labelledby="journeyPhotosTitle">
+        <span class="eyebrow">THE MOMENTS YOU BROUGHT</span><h3 id="journeyPhotosTitle">이 사진들로 구웠어요.</h3>
+        <div class="result-photo-strip" id="resultPhotos"></div>
+      </section>
+      <article class="recipe-story" id="resultRecipe">
+        <header><span class="eyebrow">YOUR TRIP, BAKED.</span><h3>여행이 세 가지 재료가 되는 순간</h3></header>
+        <div class="recipe-sections" id="recipeSections"></div>
+        <footer><span>A TASTE OF YOUR JOURNEY</span><p id="finalBake"></p></footer>
+      </article>
+      <article class="destination-card">
+        <header><span id="destinationKicker">DESTINATION NOTE</span><h3 id="destinationTitle">로스앤젤레스에서 보낸 시간</h3></header>
+        <div class="destination-facts">
+          <section><small>SCENERY</small><p id="destinationScene"></p></section>
+          <section><small>YOUR WAY</small><p id="destinationExperience"></p></section>
+          <section><small>LOCAL TASTE</small><p id="destinationFood"></p></section>
+        </div>
+      </article>
+      <article class="color-recipe">
+        <span class="eyebrow">YOUR PHOTO PALETTE</span><h3>사진에서 직접 읽은 색의 비율</h3>
+        <div class="color-bar" id="colorBar" aria-label="Flavor 색상 비율"></div>
+        <div class="color-legend" id="colorLegend"></div>
+      </article>
+      <article class="travel-letter">
+        <header><span class="eyebrow">A LETTER FROM COOKIE:RO</span><h3 id="letterTitle">그날의 여행을 천천히 떠올려 봤어요.</h3></header>
+        <div class="letter-sections">
+          <section><span>01 · THE MOMENT</span><p id="photoStory"></p></section>
+          <section><span>02 · YOUR WAY</span><p id="travelStyle"></p></section>
+          <section><span>03 · SEASON NOTE</span><p id="seasonStory"></p></section>
+          <section class="food-note"><span>04 · A TASTE TO REMEMBER</span><p id="foodStory"></p><a class="local-source" id="localSource" href="#" target="_blank" rel="noopener" hidden>지역 정보 확인하기 ↗</a></section>
+        </div>
+        <p class="closing-note" id="closingNote"></p>
+      </article>
+      <div class="jar-story">
+        <div class="jar-copy">
+          <span class="eyebrow">SAVED IN YOUR JAR</span>
+          <h3>오늘의 맛을<br>담아두었어요.</h3>
+          <p>여행의 기억은 사라지지 않고<br>나만의 취향으로 차곡차곡 쌓여요.</p>
+        </div>
+        <div class="jar-stage">
+          <img class="filled-jar-image" id="filledJar" src="assets/mango-soda-jar.png" alt="Mango Soda Cookie가 담긴 Cookie:Ro 유리 jar">
+        </div>
+      </div>
+      <div class="share-card">
+        <span class="conversion-step">01 · SHARE THE FLAVOR</span>
+        <span class="eyebrow">SAME TRIP, SAME FLAVOR?</span>
+        <h3>우리 여행,<br>같은 맛일까?</h3>
+        <p>같이 여행한 친구에게 보내고 서로의 Flavor를 비교해 보세요.<br><small>사진과 연락처는 공유되지 않고, 완성된 Flavor 설명만 링크에 담겨요.</small></p>
+        <button class="primary-button" id="shareButton">같이 여행한 친구에게 보내기 <span>↗</span></button>
+        <p class="share-status" id="shareStatus" aria-live="polite"></p>
+      </div>
+      <section class="brand-reveal" aria-labelledby="brandRevealTitle">
+        <span class="brand-reveal-kicker">THIS IS JUST A TASTE.</span>
+        <h3 id="brandRevealTitle">여행의 맛을 찾는 건,<br><em>Cookie:Ro의 시작이에요.</em></h3>
+        <p>Cookie:Ro는 흩어진 여행 사진을 모아 장소와 순간별로 정리하고, 나만의 여행 이야기 <strong>Crumbook</strong>으로 만들어 오래도록 다시 꺼내볼 수 있게 하는 여행 메모리 서비스예요.</p>
+        <ol class="brand-journey">
+          <li class="journey-step"><b>CRUMBS</b><span>흩어진<br>여행 사진</span></li>
+          <li class="journey-arrow" aria-hidden="true">→</li>
+          <li class="journey-step"><b>CRUMBOOK</b><span>사진이 한 권의<br>여행 이야기로</span></li>
+          <li class="journey-arrow" aria-hidden="true">→</li>
+          <li class="journey-step"><b>FLAVOR</b><span>그 여행만의<br>맛을 발견하고</span></li>
+          <li class="journey-arrow" aria-hidden="true">→</li>
+          <li class="journey-step"><b>COOKIE JAR</b><span>여행 기억을<br>차곡차곡 보관해요</span></li>
+        </ol>
+      </section>
+      <section class="waitlist-card" data-waitlist aria-label="내 Cookie Jar에 이 쿠키 담아두기"></section>
+    </section>
 
-<section class="screen" id="crumb"><button class="back-button" data-back="memory">← Back</button><div class="layer-heading"><span>05 · YOUR CRUMB</span><h2>단 하나만<br>간직한다면?</h2><p>If you could keep only one crumb from this trip.</p></div><figure class="final-crumb"><img id="crumbImage" alt="최종 선택한 여행 사진"><figcaption><span>YOUR CRUMB</span><b id="crumbCaption"></b></figcaption></figure><label class="crumb-reason"><span>이 순간이 가장 오래 남은 이유는?</span><textarea id="crumbReason" rows="4" placeholder="짧게 적어도 좋아요. 이 기억은 Crumbook에 함께 저장돼요."></textarea></label><button class="primary-button" id="crumbNext">다음 · 여행의 리듬 →</button></section>
+    <section class="screen" id="friend" data-step="1">
+      <div class="friend-invite">
+        <span class="eyebrow">A FLAVOR FROM YOUR FRIEND</span>
+        <img id="friendCookie" src="assets/mango-soda.png" alt="친구의 Flavor Cookie">
+        <p><strong id="friendFlavor">Mango Soda</strong> 맛 친구가<br>함께 비교해 보고 싶대요.</p>
+      </div>
+      <section class="shared-story" id="sharedStory" hidden>
+        <span class="eyebrow">YOUR FRIEND'S FLAVOR RECIPE</span>
+        <article class="recipe-story compact-recipe"><div class="recipe-sections" id="sharedRecipeSections"></div><footer><span>A TASTE OF YOUR JOURNEY</span><p id="sharedFinalBake"></p></footer></article>
+      </section>
+      <div class="section-heading compact">
+        <h2>내 여행은<br>어떤 맛일까?</h2>
+        <p>여행 정보와 사진을 골라 두 사람의 케미를 확인해요.</p>
+      </div>
+      <div class="trip-fields">
+        <label><span>어디에 다녀왔나요?</span><input id="friendDestinationInput" type="text" placeholder="예: 제주, 파리, 푸에르토리코" maxlength="40" list="destinationList"></label>
+        <label><span>언제 다녀왔나요?</span><input id="friendDateInput" type="month"></label>
+      </div>
+      <div class="upload-grid friend-upload-grid">
+        <label class="photo-slot friend-slot"><input type="file" accept="image/*" data-friend-slot="0" multiple><span class="plus">＋</span><strong>첫 번째 장면</strong><small>사진 1~3장 한 번에 선택 가능</small><img alt="첫 번째 여행 사진 미리보기"></label>
+        <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="1"><span class="plus">＋</span><strong>두 번째 장면</strong><small>선택 사항</small><img alt="두 번째 여행 사진 미리보기"></label>
+        <label class="photo-slot friend-slot optional"><input type="file" accept="image/*" data-friend-slot="2"><span class="plus">＋</span><strong>세 번째 장면</strong><small>선택 사항</small><img alt="세 번째 여행 사진 미리보기"></label>
+      </div>
+      <section class="memory-questions compact-memory" data-memory="friend" aria-label="친구의 여행 기억 질문"></section>
+      <button class="primary-button" id="friendFindButton" disabled>여행지·시기·사진을 알려 주세요</button>
+    </section>
 
-<section class="screen question-screen" id="topping"><button class="back-button" data-back="crumb">← Back</button><div class="layer-heading"><span>06 · TOPPING</span><h2>How did it move?</h2><p>여행이 흘러간 리듬을 골라 주세요.</p></div><fieldset class="question-card" data-question="topping"><legend>이번 여행은 어떻게 흘러갔나요?</legend></fieldset><button class="primary-button" data-validate="topping" disabled>이 여행 굽기 →</button></section>
+    <section class="screen compare-screen" id="compare" data-step="3">
+      <span class="eyebrow">OUR TRAVEL TASTE</span>
+      <h2 id="matchTitle">같은 여행,<br>서로 다른 맛.</h2>
+      <div class="cookie-pair">
+        <div><img id="compareA" alt="친구의 쿠키"><strong id="compareNameA"></strong><small>FRIEND</small></div>
+        <span class="pair-mark">×</span>
+        <div><img id="compareB" alt="나의 쿠키"><strong id="compareNameB"></strong><small>ME</small></div>
+      </div>
+      <article class="match-card">
+        <span id="matchLabel">A DELICIOUS DIFFERENCE</span>
+        <p id="matchCopy"></p>
+      </article>
+      <section class="friend-result-detail">
+        <span class="eyebrow">YOUR FRIEND'S TRAVEL FLAVOR</span>
+        <h3 id="friendResultTitle"></h3>
+        <p class="flavor-note" id="friendResultTagline"></p>
+        <div class="result-photo-strip" id="friendResultPhotos"></div>
+        <article class="recipe-story compact-recipe"><div class="recipe-sections" id="friendRecipeSections"></div><footer><span>A TASTE OF YOUR JOURNEY</span><p id="friendFinalBake"></p></footer></article>
+        <article class="color-recipe">
+          <span class="eyebrow">YOUR FRIEND'S PHOTO PALETTE</span><h3>사진에서 직접 읽은 색의 비율</h3>
+          <div class="color-bar" id="friendColorBar"></div><div class="color-legend" id="friendColorLegend"></div>
+        </article>
+        <article class="destination-card">
+          <header><span>DESTINATION NOTE</span><h3 id="friendDestinationTitle"></h3></header>
+          <div class="destination-facts">
+            <section><small>SCENERY</small><p id="friendScene"></p></section>
+            <section><small>YOUR WAY</small><p id="friendExperience"></p></section>
+            <section><small>LOCAL TASTE</small><p id="friendFood"></p></section>
+          </div>
+        </article>
+        <article class="travel-letter friend-letter">
+          <header><span class="eyebrow">A LETTER FROM COOKIE:RO</span><h3 id="friendLetterTitle"></h3></header>
+          <div class="letter-sections">
+            <section><span>01 · THE MOMENT</span><p id="friendPhotoStory"></p></section>
+            <section><span>02 · YOUR WAY</span><p id="friendTravelStyle"></p></section>
+            <section><span>03 · SEASON NOTE</span><p id="friendSeasonStory"></p></section>
+            <section class="food-note"><span>04 · A TASTE TO REMEMBER</span><p id="friendFoodStory"></p></section>
+          </div>
+          <p class="closing-note" id="friendClosing"></p>
+        </article>
+        <div class="friend-jar"><img id="friendFilledJar" alt="친구의 Flavor Cookie가 담긴 Cookie:Ro jar"></div>
+      </section>
+      <section class="brand-reveal compact-brand-reveal" aria-labelledby="friendBrandRevealTitle">
+        <span class="brand-reveal-kicker">THIS IS JUST A TASTE.</span>
+        <h3 id="friendBrandRevealTitle">여행의 맛을 찾는 건,<br><em>Cookie:Ro의 시작이에요.</em></h3>
+        <p>흩어진 여행 사진은 Crumbook으로 엮이고, 그 여행의 Flavor와 함께 Cookie Jar에 오래 보관돼요.</p>
+        <ol class="brand-journey"><li class="journey-step"><b>CRUMBS</b><span>여행 사진</span></li><li class="journey-arrow" aria-hidden="true">→</li><li class="journey-step"><b>CRUMBOOK</b><span>여행 이야기</span></li><li class="journey-arrow" aria-hidden="true">→</li><li class="journey-step"><b>FLAVOR</b><span>여행의 맛</span></li><li class="journey-arrow" aria-hidden="true">→</li><li class="journey-step"><b>COOKIE JAR</b><span>기억 보관</span></li></ol>
+      </section>
+      <section class="waitlist-card" data-waitlist aria-label="내 Cookie Jar에 이 쿠키 담아두기"></section>
+      <button class="primary-button" data-go="home">나도 친구에게 보내기 <span>→</span></button>
+    </section>
 
-<section class="screen baking-screen" id="baking" aria-live="polite"><div class="baking-orbit"><img src="assets/cookie-ring.png" alt="굽고 있는 여행 쿠키"><i></i></div><span class="eyebrow">BAKING YOUR TRIP</span><h2>기억을 네 겹으로<br>굽고 있어요<span class="loading-dots"></span></h2><p id="bakingCopy">여행의 감정을 BASE에 담는 중</p></section>
+    <section class="screen flavors-screen" id="flavors" data-step="0">
+      <button class="back-button" data-go="home">← Back</button>
+      <span class="eyebrow">THE COOKIE:RO COLLECTION</span>
+      <h2>여행을 닮은<br>다섯 가지 맛.</h2>
+      <img class="five-flavors" src="assets/five-flavors.png" alt="Cotton Candy, Lemon Cream, Mango Soda, Matcha Latte, Midnight Choco 쿠키 5종">
+      <button class="primary-button" data-go="upload">내 Flavor 찾기 <span>→</span></button>
+    </section>
+  </main>
 
-<section class="screen result-screen" id="result"><button class="back-button" data-back="topping">← Answers</button><div class="result-intro"><span class="eyebrow">YOUR TRIP, BAKED.</span><div class="trip-postmark" id="resultPostmark"></div><h2 id="cookieName"></h2><p class="flavor-note" id="recipeTraits"></p></div><div class="result-cookie-wrap"><span class="halo"></span><img id="cookieVisual" alt="완성된 Travel Cookie"></div><article class="recipe-card"><header><span>WHY THIS RECIPE?</span><h3>여행이 네 가지 재료가 된 이유</h3></header><div id="recipeLayers"></div></article><article class="baked-from"><span>BAKED FROM</span><p id="bakedFrom"></p></article><section class="recipe-verdict"><span class="eyebrow">DOES THIS RECIPE TASTE LIKE YOUR TRIP?</span><div><button class="primary-button" id="exactButton">Exactly! · 이대로 저장</button><button class="secondary-button" id="tweakButton">Almost — tweak my recipe</button></div><p id="saveStatus" role="status"></p></section><section class="tweak-panel" id="tweakPanel" hidden><div class="tweak-head"><span>ADJUST THE RECIPE</span><h3>내 기억에 더 가까운 재료로 바꿔보세요.</h3></div><div id="tweakFields"></div><button class="primary-button" id="saveTweak">수정한 Recipe 저장하기</button></section><section class="score-details"><button id="scoreToggle" aria-expanded="false">레이어별 점수 보기 ＋</button><div id="scoreTables" hidden></div></section></section>
-</main><footer><span>COOKIE:RO</span><span>YOUR MEMORIES, BAKED © 2026</span></footer><div class="toast" id="toast" role="status"></div><script src="app.js?v=20"></script></body></html>
+  <footer><span>COOKIE:RO</span><span>FIND THE FLAVOR © 2026</span></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" crossorigin="anonymous"></script>
+  <script src="destinations.js?v=7"></script>
+  <script src="app.js?v=40"></script>
+  <script src="recipe-125.js?v=1"></script>
+  <script src="experiment-bridge.js"></script>
+</body>
+</html>

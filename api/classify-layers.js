@@ -1,27 +1,22 @@
-const options={
-  base:['pink cloud base','fresh morning base','sun_kissed base','mellow base','deep night base'],
-  cream:['blue cloud cream','white chocolate cream','soda cream','matcha cream','chocolate ganache'],
-  cube:['marshmellow cubes','cheese cubes','mango cubes','white chocolate cubes','brownie cubes'],
-  topping:['rainbow sprinkles','lemon zest','popping candy','roasted choco pearls','crunchy chocolate balls']
+const layerOptions={
+  base:['BUTTER','PINK','SUN','MELLOW','NIGHT'],
+  cream:['TOGETHER','DISCOVERY','SCENE','STILL','AFTERGLOW'],
+  topping:['SOFT','CRISP','PLAYFUL','SLOW','INTENSE']
 };
-export const config={maxDuration:60};
-const enumFields=Object.fromEntries(Object.entries(options).map(([key,values])=>[key,{type:'string',enum:values}]));
-const keywords=Object.fromEntries(Object.keys(options).map(key=>[key,{type:'array',items:{type:'string'},minItems:2,maxItems:3}]));
-const reasons=Object.fromEntries(Object.keys(options).map(key=>[key,{type:'string'}]));
-const schema={type:'object',additionalProperties:false,properties:{matches:{type:'object',additionalProperties:false,properties:enumFields,required:Object.keys(options)},keywords:{type:'object',additionalProperties:false,properties:keywords,required:Object.keys(options)},reasons:{type:'object',additionalProperties:false,properties:reasons,required:Object.keys(options)},narrative:{type:'string'},tagline:{type:'string'}},required:['matches','keywords','reasons','narrative','tagline']};
-
+const meanings={
+  base:{BUTTER:'익숙하고 편안하며 안정적인 여행',PINK:'포근하고 다정하며 감정적 온기가 있는 여행',SUN:'따뜻하고 생기 있으며 에너지 넘치는 여행',MELLOW:'차분하고 느긋하며 오래 머문 여행',NIGHT:'짙고 몰입감 있으며 강한 대비와 내밀한 기억이 있는 여행'},
+  cream:{TOGETHER:'함께한 시간이 남음',DISCOVERY:'예상 밖의 순간이 남음',SCENE:'하나의 장면이 또렷함',STILL:'조용히 오래 머문 순간',AFTERGLOW:'돌아온 뒤 감정이 깊어짐'},
+  topping:{SOFT:'부드럽고 편안함',CRISP:'가볍고 또렷함',PLAYFUL:'통통 튀고 즉흥적임',SLOW:'천천히 고르게 이어짐',INTENSE:'강렬하고 오래 남음'}
+};
+const schema={type:'object',additionalProperties:false,properties:{matches:{type:'object',additionalProperties:false,properties:Object.fromEntries(Object.entries(layerOptions).map(([key,values])=>[key,{type:'string',enum:values}])),required:Object.keys(layerOptions)}},required:['matches']};
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured'});
-  const memory=req.body?.memory||{},visualSignals=req.body?.visualSignals||null;
-  const input={layers:Object.fromEntries(Object.keys(options).map(layer=>[layer,{selected:String(memory[layer]||'').slice(0,100),note:String(memory[`${layer}Note`]||'').slice(0,240),options:options[layer]}])),creamPhotoColors:visualSignals};
-  const instructions=`Cookie:Ro의 여행 레이어 분류기입니다. 네 레이어에서 정확히 한 재료씩 골라 625개 조합 중 하나를 만드세요.
-BASE는 base 답만, CUBE는 cube 답만, TOPPING은 topping 답만 근거로 고릅니다. CREAM만 cream 답과 creamPhotoColors의 실제 색 비율·밝기·채도·대비를 함께 반영합니다. 사진 색을 다른 세 레이어 판단이나 설명에 절대 섞지 마세요.
-자유서술은 인용하거나 복창하지 말고 그 뒤의 의미를 친구처럼 한 단계 해석하세요. 객관식에 없는 사람·장소·사건·행동·날씨는 만들지 마세요. 자유서술이 비어 있으면 선택값에 맞는 재료를 유지하세요.
-각 reason은 4~6문장으로 응답에서 읽은 여행의 결, 왜 이 재료인지, 앞뒤 레이어와의 관계를 부드럽고 비단정적으로 설명하세요. CREAM reason에만 사진에서 계산된 상위 2~3개 색과 비율을 자연스럽게 언급합니다. 재료보다 여행 해석이 중심이어야 합니다.
-keywords는 답변 기반의 짧은 한국어 구절 2~3개이며 재료별 고정 문구를 쓰지 마세요. narrative는 재료 목록을 다시 말하지 말고 여행의 시작, 변화나 대비, 기억이 남은 방식, 돌아온 뒤 여운을 6~8문장의 하나의 이야기로 엮으세요. 심리검사처럼 단정하지 말고 사진을 같이 넘겨보는 친구의 말투를 유지하세요.`;
+  const memory=req.body?.memory||{};
+  const safe=Object.fromEntries(['base','cream','topping'].map(layer=>[layer,{selected:String(memory[layer]||'').slice(0,40),note:String(memory[`${layer}Note`]||'').slice(0,240),meanings:meanings[layer]}]));
+  const instructions='Cookie:Ro 125개 레시피의 의미 코드 분류기입니다. BASE는 여행 전체의 기본 온도, CREAM은 가장 기억에 남은 순간과 돌아온 뒤의 잔상, TOPPING은 감각과 움직임을 뜻합니다. 자유서술을 읽고 각 레이어에서 제공된 5개 의미 코드 중 가장 가까운 코드 하나를 고르세요. selected와 note가 함께 있으면 note의 구체적인 기억을 우선하되 과도한 추론은 하지 마세요. 사진 색이나 사진 내용은 사용하지 않습니다.';
   try{
-    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,instructions,input:JSON.stringify(input),text:{format:{type:'json_schema',name:'cookiero_layer_matches',strict:true,schema}}})});
+    const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:'gpt-5.6-luna',store:false,instructions,input:JSON.stringify(safe),text:{format:{type:'json_schema',name:'cookiero_125_recipe_codes',strict:true,schema}}})});
     const data=await response.json();if(!response.ok)return res.status(response.status).json({error:'AI classification failed'});
     const text=data.output?.flatMap(item=>item.content||[]).find(item=>item.type==='output_text')?.text;if(!text)throw new Error('No output');
     return res.status(200).json(JSON.parse(text));

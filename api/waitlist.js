@@ -15,7 +15,7 @@ export default async function handler(req,res){
     journeyPurpose:text(cookie?.journeyPurpose,120),purposeNote:text(cookie?.purposeNote,500),departureMood:text(cookie?.departureMood,120),departureNote:text(cookie?.departureNote,500),returnMood:text(cookie?.returnMood,120),returnNote:text(cookie?.returnNote,500),photoMoods:list(cookie?.photoMoods),photoMoodNote:text(cookie?.photoMoodNote,500),air:text(cookie?.air,120),wind:text(cookie?.wind,120),airWindNote:text(cookie?.airWindNote,500),answerVersion:Number(cookie?.answerVersion)||2,
     photosStored:false,storageVersion:4
   };
-  if(!savedCookie.cookieId||!savedCookie.destination||!/^\d{4}-\d{2}$/.test(savedCookie.travelDate)||!savedCookie.flavorId||!savedCookie.flavorName||!savedCookie.baseAnalysis||!savedCookie.creamAnalysis||!savedCookie.cubeAnalysis||!savedCookie.toppingAnalysis||!savedCookie.finalBake)return res.status(400).json({error:'Invalid cookie record',message:'Cookie Jar에 담을 여행 기록이 완전하지 않아요.'});
+  if(!savedCookie.cookieId||!savedCookie.destination||!/^\d{4}-\d{2}$/.test(savedCookie.travelDate)||!savedCookie.flavorId||!savedCookie.flavorName||!savedCookie.baseAnalysis||!savedCookie.creamAnalysis||!savedCookie.toppingAnalysis||!savedCookie.finalBake)return res.status(400).json({error:'Invalid cookie record',message:'Cookie Jar에 담을 여행 기록이 완전하지 않아요.'});
   try{
     const fullUrl=rawWebhook.match(/https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/(?:exec|dev)/)?.[0];
     const deploymentId=!fullUrl&&/^[A-Za-z0-9_-]{30,}$/.test(rawWebhook.replace(/^['"]|['"]$/g,''))?rawWebhook.replace(/^['"]|['"]$/g,''):null;
